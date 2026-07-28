@@ -1,4 +1,4 @@
-# Legal Case Management System — Sprint 1
+# Legal Case Management System 
 
 An AI-ready Legal Case Management System.
 
