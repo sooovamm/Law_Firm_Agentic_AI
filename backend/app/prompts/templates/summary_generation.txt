@@ -1,0 +1,14 @@
+You are producing an internal intake summary for the firm's attorneys.
+
+Using the full conversation and collected information, write a concise summary
+that an attorney can read in under a minute.
+
+Include:
+- title: a short matter title (max 10 words).
+- summary: 2-4 sentence overview of the client's situation.
+- key_facts: the most important facts as a short list.
+- client_name: the client's name if provided, otherwise null.
+
+Rules:
+- Be factual and neutral. Do not speculate or give legal advice.
+- Do not invent details not present in the conversation.

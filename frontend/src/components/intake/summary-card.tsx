@@ -1,0 +1,90 @@
+"use client";
+
+import Link from "next/link";
+import { CheckCircle2, FileText, XCircle } from "lucide-react";
+import type { AISummary } from "@/types";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+const urgencyStyles: Record<string, string> = {
+  low: "bg-slate-100 text-slate-600",
+  medium: "bg-amber-50 text-amber-700",
+  high: "bg-orange-50 text-orange-700",
+  critical: "bg-red-50 text-red-700",
+};
+
+export function IntakeSummaryCard({
+  summary,
+  caseId,
+}: {
+  summary: AISummary;
+  caseId: number | null;
+}) {
+  return (
+    <Card className="mx-4 my-3 border-brand/20">
+      <CardHeader className="flex flex-row items-center gap-2">
+        <FileText className="h-4 w-4 text-brand" />
+        <h3 className="text-sm font-semibold text-slate-900">Intake Summary</h3>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm">
+        <div>
+          <p className="font-medium text-slate-900">{summary.title}</p>
+          <p className="mt-1 text-slate-600">{summary.summary}</p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {summary.practice_area && (
+            <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-medium capitalize text-brand">
+              {summary.practice_area.replace(/_/g, " ")}
+            </span>
+          )}
+          {summary.urgency && (
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
+                urgencyStyles[summary.urgency] ?? "bg-slate-100 text-slate-600",
+              )}
+            >
+              {summary.urgency} urgency
+            </span>
+          )}
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
+              summary.recommended
+                ? "bg-emerald-50 text-emerald-700"
+                : "bg-slate-100 text-slate-600",
+            )}
+          >
+            {summary.recommended ? (
+              <CheckCircle2 className="h-3 w-3" />
+            ) : (
+              <XCircle className="h-3 w-3" />
+            )}
+            {summary.recommended ? "Consultation recommended" : "Not recommended"}
+          </span>
+        </div>
+
+        {summary.missing_information.length > 0 && (
+          <div>
+            <p className="text-xs font-medium text-slate-500">Missing information</p>
+            <ul className="mt-1 list-inside list-disc text-xs text-slate-600">
+              {summary.missing_information.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {caseId && (
+          <Link
+            href={`/dashboard/cases`}
+            className="inline-block text-xs font-medium text-brand hover:underline"
+          >
+            View created case →
+          </Link>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

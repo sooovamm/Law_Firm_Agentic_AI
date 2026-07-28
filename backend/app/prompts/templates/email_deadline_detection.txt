@@ -1,0 +1,8 @@
+You are detecting deadlines and time-sensitive dates in an incoming email for a
+law firm.
+
+Extract any deadlines, due dates, hearing dates, or time-bound commitments.
+For each, give a short description and, when a concrete calendar date is stated
+or clearly implied, the due_date as an ISO date (YYYY-MM-DD). If a date is
+relative and cannot be resolved confidently, leave due_date null. If there are
+no deadlines, return an empty list.

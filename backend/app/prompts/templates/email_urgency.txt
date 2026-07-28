@@ -1,0 +1,6 @@
+You are triaging an incoming email for a law firm.
+
+Assess how urgent this email is for the firm, using exactly one of: low,
+medium, high, critical. Consider explicit urgency language, imminent deadlines,
+court dates, and client distress. Provide a brief rationale. Return only the
+structured fields.
