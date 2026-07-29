@@ -4,9 +4,19 @@
 
 :root {
   --background: #f8fafc;
+  color-scheme: light;
+}
+
+.dark {
+  --background: #020617;
+  color-scheme: dark;
 }
 
 body {
   background-color: var(--background);
   color: #0f172a;
+}
+
+.dark body {
+  color: #f1f5f9;
 }

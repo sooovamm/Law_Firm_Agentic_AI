@@ -17,7 +17,7 @@ export function ChatBubble({ role, content }: ChatBubbleProps) {
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-          isUser ? "bg-slate-200 text-slate-600" : "bg-brand text-white",
+          isUser ? "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400" : "bg-brand text-white",
         )}
       >
         {isUser ? <UserIcon className="h-4 w-4" /> : <Scale className="h-4 w-4" />}
@@ -27,7 +27,7 @@ export function ChatBubble({ role, content }: ChatBubbleProps) {
           "max-w-[75%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
           isUser
             ? "rounded-tr-sm bg-brand text-white"
-            : "rounded-tl-sm bg-white text-slate-800 shadow-sm ring-1 ring-slate-100",
+            : "rounded-tl-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800",
         )}
       >
         {content}
@@ -42,10 +42,10 @@ export function TypingBubble() {
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-white">
         <Scale className="h-4 w-4" />
       </div>
-      <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">
-        <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:-0.3s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 [animation-delay:-0.15s]" />
-        <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300" />
+      <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-white dark:bg-slate-900 px-4 py-3 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800">
+        <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 dark:bg-slate-600 [animation-delay:-0.3s]" />
+        <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 dark:bg-slate-600 [animation-delay:-0.15s]" />
+        <span className="h-2 w-2 animate-bounce rounded-full bg-slate-300 dark:bg-slate-600" />
       </div>
     </div>
   );

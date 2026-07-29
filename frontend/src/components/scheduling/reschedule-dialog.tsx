@@ -68,41 +68,41 @@ export function RescheduleDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+      <div className="w-full max-w-md rounded-lg bg-white dark:bg-slate-900 shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
           <div className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5 text-brand" />
-            <h2 className="text-base font-semibold text-slate-900">Reschedule</h2>
+            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Reschedule</h2>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <div className="space-y-4 px-5 py-5">
           {error && (
-            <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+            <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
           )}
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">New date</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">New date</label>
             <input
               type="date"
               value={date}
               min={toDateInput(new Date())}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Available slots
             </label>
             {loading ? (
-              <p className="text-sm text-slate-400">Loading...</p>
+              <p className="text-sm text-slate-400 dark:text-slate-500">Loading...</p>
             ) : slots.length === 0 ? (
-              <p className="text-sm text-slate-400">No open slots for this day.</p>
+              <p className="text-sm text-slate-400 dark:text-slate-500">No open slots for this day.</p>
             ) : (
               <div className="grid max-h-40 grid-cols-4 gap-2 overflow-y-auto">
                 {slots.map((s) => (
@@ -113,7 +113,7 @@ export function RescheduleDialog({
                       "rounded-md border px-2 py-1.5 text-sm transition-colors",
                       selected === s.start
                         ? "border-brand bg-brand text-white"
-                        : "border-slate-300 text-slate-700 hover:border-brand hover:text-brand",
+                        : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:border-brand hover:text-brand",
                     )}
                   >
                     {formatTime(s.start)}
@@ -124,7 +124,7 @@ export function RescheduleDialog({
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 px-5 py-4">
+        <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-4">
           <Button variant="secondary" onClick={onClose} disabled={saving}>
             Cancel
           </Button>

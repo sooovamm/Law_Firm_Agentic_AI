@@ -9,6 +9,7 @@ import { Input, Label } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { ApiError } from "@/lib/api";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -30,18 +31,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
+      <ThemeToggle className="absolute right-4 top-4" />
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center">
           <Scale className="h-10 w-10 text-brand" />
-          <h1 className="mt-2 text-2xl font-semibold text-slate-900">Legal CMS</h1>
-          <p className="text-sm text-slate-500">Sign in to your account</p>
+          <h1 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">Legal CMS</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Sign in to your account</p>
         </div>
 
         <Card>
           <CardContent className="space-y-4 py-6">
             {error && (
-              <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+              <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
             )}
             <div>
               <Label htmlFor="email">Email</Label>
@@ -68,7 +70,7 @@ export default function LoginPage() {
             <Button className="w-full" onClick={handleSubmit} disabled={submitting}>
               {submitting ? "Signing in..." : "Sign in"}
             </Button>
-            <p className="text-center text-sm text-slate-500">
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
               No account?{" "}
               <Link href="/register" className="font-medium text-brand hover:underline">
                 Register

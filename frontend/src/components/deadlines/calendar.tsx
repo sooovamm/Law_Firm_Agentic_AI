@@ -47,10 +47,10 @@ export function DeadlineCalendar({
   }, [deadlines]);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-      <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
+    <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+      <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
         {WEEKDAYS.map((w) => (
-          <div key={w} className="px-2 py-2 text-center text-xs font-semibold uppercase text-slate-400">
+          <div key={w} className="px-2 py-2 text-center text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">
             {w}
           </div>
         ))}
@@ -66,15 +66,15 @@ export function DeadlineCalendar({
               key={i}
               onClick={() => onSelectDay?.(key)}
               className={cn(
-                "min-h-[92px] border-b border-r border-slate-100 p-1.5 text-left align-top transition-colors hover:bg-slate-50",
-                !inMonth && "bg-slate-50/50",
+                "min-h-[92px] border-b border-r border-slate-100 dark:border-slate-800 p-1.5 text-left align-top transition-colors hover:bg-slate-50 dark:hover:bg-slate-950",
+                !inMonth && "bg-slate-50 dark:bg-slate-950/50",
               )}
             >
               <span
                 className={cn(
                   "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs",
-                  isToday ? "bg-brand font-semibold text-white" : "text-slate-500",
-                  !inMonth && "text-slate-300",
+                  isToday ? "bg-brand font-semibold text-white" : "text-slate-500 dark:text-slate-400",
+                  !inMonth && "text-slate-300 dark:text-slate-600",
                 )}
               >
                 {d.getDate()}
@@ -85,7 +85,7 @@ export function DeadlineCalendar({
                     key={item.id}
                     className={cn(
                       "truncate rounded px-1 py-0.5 text-[10px] font-medium",
-                      item.completed ? "bg-slate-100 text-slate-400 line-through" : "bg-brand/10 text-brand",
+                      item.completed ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 line-through" : "bg-brand/10 text-brand",
                     )}
                     title={item.title}
                   >
@@ -93,7 +93,7 @@ export function DeadlineCalendar({
                   </div>
                 ))}
                 {items.length > 3 && (
-                  <p className="px-1 text-[10px] text-slate-400">+{items.length - 3} more</p>
+                  <p className="px-1 text-[10px] text-slate-400 dark:text-slate-500">+{items.length - 3} more</p>
                 )}
               </div>
             </button>

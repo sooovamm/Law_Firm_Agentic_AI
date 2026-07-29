@@ -13,8 +13,8 @@ function FactList({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <div>
-      <p className="text-xs font-semibold uppercase text-slate-400">{title}</p>
-      <ul className="mt-1 list-inside list-disc space-y-0.5 text-sm text-slate-700">
+      <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">{title}</p>
+      <ul className="mt-1 list-inside list-disc space-y-0.5 text-sm text-slate-700 dark:text-slate-300">
         {items.map((item, i) => (
           <li key={i}>{item}</li>
         ))}
@@ -84,19 +84,19 @@ export function DocumentDrawer({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
-      <div className="flex h-full w-full max-w-lg flex-col bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 className="truncate text-base font-semibold text-slate-900">
+      <div className="flex h-full w-full max-w-lg flex-col bg-white dark:bg-slate-900 shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
+          <h2 className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
             {doc?.filename ?? "Document"}
           </h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
           {error && (
-            <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+            <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
           )}
 
           {doc && (
@@ -120,11 +120,11 @@ export function DocumentDrawer({
                 >
                   {doc.processing_status}
                 </span>
-                <span className="text-xs text-slate-400">{formatBytes(doc.size_bytes)}</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500">{formatBytes(doc.size_bytes)}</span>
               </div>
 
               {/* Preview */}
-              <div className="overflow-hidden rounded-md border border-slate-200 bg-slate-50">
+              <div className="overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
                 {isImage ? (
                   previewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -134,12 +134,12 @@ export function DocumentDrawer({
                       className="max-h-64 w-full object-contain"
                     />
                   ) : (
-                    <div className="flex h-32 items-center justify-center text-sm text-slate-400">
+                    <div className="flex h-32 items-center justify-center text-sm text-slate-400 dark:text-slate-500">
                       Loading preview...
                     </div>
                   )
                 ) : (
-                  <div className="flex h-32 items-center justify-center text-sm text-slate-400">
+                  <div className="flex h-32 items-center justify-center text-sm text-slate-400 dark:text-slate-500">
                     Preview not available. Use download.
                   </div>
                 )}
@@ -154,15 +154,15 @@ export function DocumentDrawer({
               </button>
 
               {doc.processing_status === "failed" && doc.processing_error && (
-                <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+                <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">
                   Processing failed: {doc.processing_error}
                 </div>
               )}
 
               {doc.summary && (
                 <div>
-                  <p className="text-xs font-semibold uppercase text-slate-400">Summary</p>
-                  <p className="mt-1 text-sm text-slate-700">{doc.summary}</p>
+                  <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">Summary</p>
+                  <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{doc.summary}</p>
                 </div>
               )}
 

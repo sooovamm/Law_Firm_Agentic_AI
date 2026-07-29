@@ -45,33 +45,33 @@ export function UploadDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-900">Upload Document</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+      <div className="w-full max-w-md rounded-lg bg-white dark:bg-slate-900 shadow-xl">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Upload Document</h2>
+          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">
             <X className="h-5 w-5" />
           </button>
         </div>
 
         <div className="space-y-4 px-5 py-5">
           {error && (
-            <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+            <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
           )}
 
           <div
             onClick={() => inputRef.current?.click()}
-            className="flex cursor-pointer flex-col items-center gap-2 rounded-md border-2 border-dashed border-slate-300 px-4 py-8 text-center hover:border-brand"
+            className="flex cursor-pointer flex-col items-center gap-2 rounded-md border-2 border-dashed border-slate-300 dark:border-slate-600 px-4 py-8 text-center hover:border-brand"
           >
-            <Upload className="h-6 w-6 text-slate-400" />
+            <Upload className="h-6 w-6 text-slate-400 dark:text-slate-500" />
             {file ? (
               <div>
-                <p className="text-sm font-medium text-slate-900">{file.name}</p>
-                <p className="text-xs text-slate-500">{formatBytes(file.size)}</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{file.name}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{formatBytes(file.size)}</p>
               </div>
             ) : (
               <div>
-                <p className="text-sm text-slate-600">Click to choose a file</p>
-                <p className="text-xs text-slate-400">PDF, DOCX, PNG, or JPG</p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Click to choose a file</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">PDF, DOCX, PNG, or JPG</p>
               </div>
             )}
             <input
@@ -84,19 +84,19 @@ export function UploadDialog({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
               Case ID (optional)
             </label>
             <input
               value={caseId}
               onChange={(e) => setCaseId(e.target.value.replace(/\D/g, ""))}
               placeholder="Link to a case to auto-update its summary"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+              className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 px-5 py-4">
+        <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-4">
           <Button variant="secondary" onClick={onClose} disabled={uploading}>
             Cancel
           </Button>

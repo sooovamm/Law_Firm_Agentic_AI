@@ -53,15 +53,15 @@ export function WeekCalendar({
           <div
             key={key}
             className={cn(
-              "min-h-[140px] rounded-lg border bg-white p-2",
-              isToday ? "border-brand" : "border-slate-200",
+              "min-h-[140px] rounded-lg border bg-white dark:bg-slate-900 p-2",
+              isToday ? "border-brand" : "border-slate-200 dark:border-slate-700",
             )}
           >
             <div className="mb-2 flex items-center justify-between">
               <span
                 className={cn(
                   "text-xs font-semibold uppercase",
-                  isToday ? "text-brand" : "text-slate-400",
+                  isToday ? "text-brand" : "text-slate-400 dark:text-slate-500",
                 )}
               >
                 {d.toLocaleDateString(undefined, { weekday: "short" })}
@@ -69,7 +69,7 @@ export function WeekCalendar({
               <span
                 className={cn(
                   "text-sm font-medium",
-                  isToday ? "text-brand" : "text-slate-600",
+                  isToday ? "text-brand" : "text-slate-600 dark:text-slate-400",
                 )}
               >
                 {d.getDate()}
@@ -77,18 +77,18 @@ export function WeekCalendar({
             </div>
             <div className="space-y-1.5">
               {items.length === 0 ? (
-                <p className="text-[11px] text-slate-300">—</p>
+                <p className="text-[11px] text-slate-300 dark:text-slate-600">—</p>
               ) : (
                 items.map((c) => (
                   <button
                     key={c.id}
                     onClick={() => onSelect(c)}
-                    className="w-full rounded-md bg-slate-50 px-2 py-1.5 text-left transition-colors hover:bg-slate-100"
+                    className="w-full rounded-md bg-slate-50 dark:bg-slate-950 px-2 py-1.5 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
-                    <p className="text-xs font-medium text-slate-900">
+                    <p className="text-xs font-medium text-slate-900 dark:text-slate-100">
                       {formatTime(c.scheduled_time)}
                     </p>
-                    <p className="truncate text-[11px] text-slate-500">
+                    <p className="truncate text-[11px] text-slate-500 dark:text-slate-400">
                       {c.client_name ?? "No client"}
                     </p>
                     <Badge variant={consultationStatusVariant[c.status]} className="mt-1">

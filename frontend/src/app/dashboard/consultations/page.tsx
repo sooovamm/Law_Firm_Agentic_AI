@@ -94,8 +94,8 @@ export default function ConsultationsPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Consultations</h1>
-          <p className="text-sm text-slate-500">Schedule and manage client consultations.</p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Consultations</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Schedule and manage client consultations.</p>
         </div>
         <Button onClick={() => setBooking(true)}>
           <Plus className="mr-1.5 h-4 w-4" />
@@ -108,7 +108,7 @@ export default function ConsultationsPage() {
           <Button variant="ghost" onClick={() => shiftWeek(-1)} aria-label="Previous week">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="min-w-[140px] text-center text-sm font-medium text-slate-700">
+          <span className="min-w-[140px] text-center text-sm font-medium text-slate-700 dark:text-slate-300">
             {label}
           </span>
           <Button variant="ghost" onClick={() => shiftWeek(1)} aria-label="Next week">
@@ -121,12 +121,12 @@ export default function ConsultationsPage() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
       )}
 
       {loading ? (
         <Card>
-          <CardContent className="py-16 text-center text-sm text-slate-500">
+          <CardContent className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
             Loading schedule...
           </CardContent>
         </Card>

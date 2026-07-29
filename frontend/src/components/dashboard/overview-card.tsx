@@ -21,14 +21,14 @@ export function OverviewCard({
     <Card>
       <CardContent className="flex items-center justify-between py-6">
         <div>
-          <p className="text-sm font-medium text-slate-500">{label}</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
           {loading ? (
-            <div className="mt-2 h-8 w-14 animate-pulse rounded bg-slate-200" />
+            <div className="mt-2 h-8 w-14 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
           ) : (
-            <p className="mt-1 text-3xl font-semibold text-slate-900">{value}</p>
+            <p className="mt-1 text-3xl font-semibold text-slate-900 dark:text-slate-100">{value}</p>
           )}
         </div>
-        <div className={cn("rounded-full bg-slate-50 p-3", accent)}>
+        <div className={cn("rounded-full bg-slate-50 dark:bg-slate-950 p-3", accent)}>
           <Icon className="h-6 w-6" />
         </div>
       </CardContent>

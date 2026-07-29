@@ -10,9 +10,9 @@ import type { ConversationSummaryItem } from "@/types";
 import { cn } from "@/lib/utils";
 
 const statusStyles: Record<string, string> = {
-  active: "bg-emerald-50 text-emerald-700",
-  completed: "bg-slate-100 text-slate-600",
-  abandoned: "bg-amber-50 text-amber-700",
+  active: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400",
+  completed: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400",
+  abandoned: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400",
 };
 
 export default function IntakePage() {
@@ -42,8 +42,8 @@ export default function IntakePage() {
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">AI Client Intake</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">AI Client Intake</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Start a guided intake or review past conversations.
           </p>
         </div>
@@ -57,17 +57,17 @@ export default function IntakePage() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
       )}
 
       <Card>
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-6 text-sm text-slate-500">Loading conversations...</div>
+            <div className="p-6 text-sm text-slate-500 dark:text-slate-400">Loading conversations...</div>
           ) : conversations.length === 0 ? (
             <div className="flex flex-col items-center gap-3 p-10 text-center">
-              <MessageSquarePlus className="h-8 w-8 text-slate-300" />
-              <p className="text-sm text-slate-500">No conversations yet.</p>
+              <MessageSquarePlus className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+              <p className="text-sm text-slate-500 dark:text-slate-400">No conversations yet.</p>
               <Link
                 href="/dashboard/intake/new"
                 className="text-sm font-medium text-brand hover:underline"
@@ -76,30 +76,30 @@ export default function IntakePage() {
               </Link>
             </div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {conversations.map((c) => (
                 <li key={c.id}>
                   <Link
                     href={`/dashboard/intake/${c.id}`}
-                    className="flex items-center justify-between px-5 py-4 hover:bg-slate-50"
+                    className="flex items-center justify-between px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-950"
                   >
                     <div>
-                      <p className="text-sm font-medium text-slate-900">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
                         Conversation #{c.id}
                         {c.practice_area && (
-                          <span className="ml-2 capitalize text-slate-500">
+                          <span className="ml-2 capitalize text-slate-500 dark:text-slate-400">
                             · {c.practice_area.replace(/_/g, " ")}
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-400 dark:text-slate-500">
                         Updated {new Date(c.updated_at).toLocaleString()}
                       </p>
                     </div>
                     <span
                       className={cn(
                         "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                        statusStyles[c.status] ?? "bg-slate-100 text-slate-600",
+                        statusStyles[c.status] ?? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400",
                       )}
                     >
                       {c.status}

@@ -62,20 +62,20 @@ export default function EmailsPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Inbox</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Inbox</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
           AI-triaged emails from Gmail and Outlook, attached to cases automatically.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="relative sm:col-span-2">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search emails..."
-            className="w-full rounded-md border border-slate-300 py-2 pl-9 pr-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full rounded-md border border-slate-300 dark:border-slate-600 py-2 pl-9 pr-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
           />
         </div>
         <Select value={urgency || ALL} onValueChange={(v) => setUrgency(v === ALL ? "" : v)}>
@@ -94,7 +94,7 @@ export default function EmailsPage() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
       )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
@@ -103,32 +103,32 @@ export default function EmailsPage() {
           <Card>
             <CardContent className="p-0">
               {loading ? (
-                <div className="p-6 text-sm text-slate-500">Loading...</div>
+                <div className="p-6 text-sm text-slate-500 dark:text-slate-400">Loading...</div>
               ) : emails.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 p-10 text-center text-sm text-slate-500">
-                  <Mail className="h-8 w-8 text-slate-300" />
+                <div className="flex flex-col items-center gap-2 p-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                  <Mail className="h-8 w-8 text-slate-300 dark:text-slate-600" />
                   No emails found.
                 </div>
               ) : (
-                <ul className="divide-y divide-slate-50">
+                <ul className="divide-y divide-slate-50 dark:divide-slate-900">
                   {emails.map((e) => (
                     <li key={e.id}>
                       <button
                         onClick={() => setSelectedId(e.id)}
                         className={cn(
                           "w-full px-4 py-3 text-left transition-colors",
-                          selectedId === e.id ? "bg-brand/5" : "hover:bg-slate-50",
+                          selectedId === e.id ? "bg-brand/5" : "hover:bg-slate-50 dark:hover:bg-slate-950",
                         )}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <span className="truncate text-sm font-medium text-slate-900">
+                          <span className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                             {e.sender}
                           </span>
-                          <span className="shrink-0 text-xs text-slate-400">
+                          <span className="shrink-0 text-xs text-slate-400 dark:text-slate-500">
                             {formatEmailDate(e.received_at ?? e.created_at)}
                           </span>
                         </div>
-                        <p className="mt-0.5 truncate text-sm text-slate-600">{e.subject}</p>
+                        <p className="mt-0.5 truncate text-sm text-slate-600 dark:text-slate-400">{e.subject}</p>
                         <div className="mt-1.5 flex items-center gap-1.5">
                           {e.urgency && (
                             <Badge variant={emailUrgencyVariant[e.urgency]}>{e.urgency}</Badge>
@@ -150,7 +150,7 @@ export default function EmailsPage() {
             <EmailDetailPane emailId={selectedId} onReplied={load} />
           ) : (
             <Card>
-              <CardContent className="py-16 text-center text-sm text-slate-400">
+              <CardContent className="py-16 text-center text-sm text-slate-400 dark:text-slate-500">
                 Select an email to view details.
               </CardContent>
             </Card>

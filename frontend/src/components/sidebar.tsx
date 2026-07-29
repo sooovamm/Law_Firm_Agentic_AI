@@ -6,6 +6,7 @@ import { AlarmClock, Briefcase, CalendarClock, FileText, LayoutDashboard, LogOut
 
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -23,10 +24,13 @@ export function Sidebar() {
   const { user, logout } = useAuth();
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-slate-200 bg-white">
-      <div className="flex items-center gap-2 border-b border-slate-100 px-6 py-5">
-        <Scale className="h-6 w-6 text-brand" />
-        <span className="text-lg font-semibold text-slate-900">Legal CMS</span>
+    <aside className="flex h-screen w-64 flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+      <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 px-6 py-5">
+        <div className="flex items-center gap-2">
+          <Scale className="h-6 w-6 text-brand" />
+          <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">Legal CMS</span>
+        </div>
+        <ThemeToggle />
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
@@ -41,7 +45,7 @@ export function Sidebar() {
                 "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                 active
                   ? "bg-brand/10 text-brand"
-                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -51,14 +55,14 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="border-t border-slate-100 px-4 py-4">
+      <div className="border-t border-slate-100 dark:border-slate-800 px-4 py-4">
         <div className="mb-3">
-          <p className="truncate text-sm font-medium text-slate-900">{user?.full_name}</p>
-          <p className="truncate text-xs capitalize text-slate-500">{user?.role}</p>
+          <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{user?.full_name}</p>
+          <p className="truncate text-xs capitalize text-slate-500 dark:text-slate-400">{user?.role}</p>
         </div>
         <button
           onClick={logout}
-          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-red-600"
+          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400"
         >
           <LogOut className="h-4 w-4" />
           Sign out

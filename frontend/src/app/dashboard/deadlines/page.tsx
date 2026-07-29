@@ -87,18 +87,18 @@ export default function DeadlinesPage() {
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Court Deadlines</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Court Deadlines</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             AI-extracted from documents and emails, plus anything you add.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg bg-slate-100 p-1">
+          <div className="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1">
             <button
               onClick={() => setView("list")}
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                view === "list" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600",
+                view === "list" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-600 dark:text-slate-400",
               )}
             >
               <LayoutList className="h-4 w-4" />
@@ -108,7 +108,7 @@ export default function DeadlinesPage() {
               onClick={() => setView("calendar")}
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                view === "calendar" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600",
+                view === "calendar" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-600 dark:text-slate-400",
               )}
             >
               Calendar
@@ -122,7 +122,7 @@ export default function DeadlinesPage() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
       )}
 
       {view === "list" ? (
@@ -135,7 +135,7 @@ export default function DeadlinesPage() {
           />
         ) : (
           <Card>
-            <CardContent className="py-16 text-center text-sm text-slate-500">
+            <CardContent className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
               Loading deadlines...
             </CardContent>
           </Card>
@@ -147,7 +147,7 @@ export default function DeadlinesPage() {
               <Button variant="ghost" onClick={() => shiftMonth(-1)} aria-label="Previous month">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="min-w-[160px] text-center text-sm font-medium text-slate-700">
+              <span className="min-w-[160px] text-center text-sm font-medium text-slate-700 dark:text-slate-300">
                 {MONTHS[cursor.month]} {cursor.year}
               </span>
               <Button variant="ghost" onClick={() => shiftMonth(1)} aria-label="Next month">

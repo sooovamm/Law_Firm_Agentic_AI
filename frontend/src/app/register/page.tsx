@@ -9,6 +9,7 @@ import { Input, Label } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { ApiError } from "@/lib/api";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { UserRole } from "@/types";
 
 const roles: { value: UserRole; label: string }[] = [
@@ -43,18 +44,19 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8">
+    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-8">
+      <ThemeToggle className="absolute right-4 top-4" />
       <div className="w-full max-w-md">
         <div className="mb-6 flex flex-col items-center">
           <Scale className="h-10 w-10 text-brand" />
-          <h1 className="mt-2 text-2xl font-semibold text-slate-900">Create account</h1>
-          <p className="text-sm text-slate-500">Join your firm&apos;s workspace</p>
+          <h1 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">Create account</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Join your firm&apos;s workspace</p>
         </div>
 
         <Card>
           <CardContent className="space-y-4 py-6">
             {error && (
-              <div className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+              <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
             )}
             <div>
               <Label htmlFor="fullName">Full name</Label>
@@ -91,7 +93,7 @@ export default function RegisterPage() {
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                className="w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               >
                 {roles.map((r) => (
                   <option key={r.value} value={r.value}>
@@ -103,7 +105,7 @@ export default function RegisterPage() {
             <Button className="w-full" onClick={handleSubmit} disabled={submitting}>
               {submitting ? "Creating account..." : "Create account"}
             </Button>
-            <p className="text-center text-sm text-slate-500">
+            <p className="text-center text-sm text-slate-500 dark:text-slate-400">
               Already have an account?{" "}
               <Link href="/login" className="font-medium text-brand hover:underline">
                 Sign in

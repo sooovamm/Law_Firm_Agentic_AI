@@ -15,7 +15,7 @@ export function DocumentUploadPlaceholder() {
       type="button"
       disabled
       title="Document upload coming soon"
-      className="flex shrink-0 cursor-not-allowed items-center justify-center rounded-md border border-dashed border-slate-300 px-3 py-2 text-slate-400"
+      className="flex shrink-0 cursor-not-allowed items-center justify-center rounded-md border border-dashed border-slate-300 dark:border-slate-600 px-3 py-2 text-slate-400 dark:text-slate-500"
     >
       <Paperclip className="h-4 w-4" />
       <span className="ml-1.5 hidden text-xs sm:inline">Attach</span>

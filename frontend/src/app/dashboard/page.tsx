@@ -46,14 +46,14 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
+        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">
           Welcome back, {user?.full_name.split(" ")[0]}
         </h1>
-        <p className="text-sm text-slate-500">Your firm at a glance.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Your firm at a glance.</p>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
       )}
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -68,21 +68,21 @@ export default function DashboardPage() {
           label="Closed Cases"
           value={cards?.closed_cases ?? 0}
           icon={CheckCircle2}
-          accent="text-slate-500"
+          accent="text-slate-500 dark:text-slate-400"
           loading={loading}
         />
         <OverviewCard
           label="New Clients"
           value={cards?.new_clients ?? 0}
           icon={UserPlus}
-          accent="text-emerald-600"
+          accent="text-emerald-600 dark:text-emerald-400"
           loading={loading}
         />
         <OverviewCard
           label="Today's Consultations"
           value={cards?.todays_consultations ?? 0}
           icon={CalendarCheck}
-          accent="text-amber-600"
+          accent="text-amber-600 dark:text-amber-400"
           loading={loading}
         />
       </div>
