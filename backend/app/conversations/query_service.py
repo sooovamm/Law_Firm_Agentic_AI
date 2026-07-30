@@ -18,9 +18,9 @@ class ConversationQueryService:
     def __init__(self, db: Session) -> None:
         self.repo = ConversationRepository(db)
 
-    def get_detail(self, conversation_id: int) -> ConversationDetail:
+    def get_detail(self, conversation_id: int, *, requested_by_id: int) -> ConversationDetail:
         conv = self.repo.get_with_messages(conversation_id)
-        if conv is None:
+        if conv is None or conv.created_by_id != requested_by_id:
             raise NotFoundError("Conversation not found")
         return self._to_detail(conv)
 

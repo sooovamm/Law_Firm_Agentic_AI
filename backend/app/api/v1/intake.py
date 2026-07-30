@@ -48,7 +48,9 @@ def conversation_history(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> list[ConversationSummaryItem]:
-    return ConversationQueryService(db).list_history(skip=skip, limit=limit)
+    return ConversationQueryService(db).list_history(
+        created_by_id=user.id, skip=skip, limit=limit
+    )
 
 
 @router.get("/conversation/{conversation_id}", response_model=ConversationDetail)
@@ -57,4 +59,4 @@ def get_conversation(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> ConversationDetail:
-    return ConversationQueryService(db).get_detail(conversation_id)
+    return ConversationQueryService(db).get_detail(conversation_id, requested_by_id=user.id)

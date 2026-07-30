@@ -72,7 +72,7 @@ class IntakeService:
         self, conversation_id: int, user_message: str, actor_id: int | None = None
     ) -> ChatMessageResponse:
         conv = self.repo.get(conversation_id)
-        if conv is None:
+        if conv is None or conv.created_by_id != actor_id:
             raise NotFoundError("Conversation not found")
         if conv.status != ConversationStatus.ACTIVE:
             raise ValidationError("This conversation is already completed")
