@@ -134,12 +134,29 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
 export const api = {
   // Auth
-  register: (payload: {
+  requestRegistrationOtp: (payload: {
     email: string;
     full_name: string;
     password: string;
     role?: string;
-  }) => request<AuthResponse>("/auth/register", { method: "POST", body: payload, auth: false }),
+  }) =>
+    request<{ message: string; expires_in_minutes: number }>(
+      "/auth/register/request-otp",
+      { method: "POST", body: payload, auth: false },
+    ),
+
+  verifyRegistrationOtp: (payload: {
+    email: string;
+    full_name: string;
+    password: string;
+    role?: string;
+    otp_code: string;
+  }) =>
+    request<AuthResponse>("/auth/register/verify-otp", {
+      method: "POST",
+      body: payload,
+      auth: false,
+    }),
 
   login: (payload: { email: string; password: string }) =>
     request<AuthResponse>("/auth/login", { method: "POST", body: payload, auth: false }),

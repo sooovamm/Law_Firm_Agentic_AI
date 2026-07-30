@@ -16,12 +16,14 @@ from sqlalchemy.pool import StaticPool
 import app.models  # noqa: F401
 from app.ai.base import ChatMessage
 from app.api.v1.documents import get_llm, get_storage_dep
+from app.core.mailer import get_mailer
 from app.database.base import Base
 from app.database.session import get_db
 from app.documents.enums import DocumentType
 from app.documents.schemas import DocumentAnalysis
 from app.main import app
 from app.storage.local import LocalStorage
+from tests._auth_helpers import FakeMailer, register_via_otp
 
 PDF_CONTENT_TYPE = "application/pdf"
 
@@ -84,9 +86,11 @@ def client(tmp_path):
             db.close()
 
     storage = LocalStorage(base_dir=str(tmp_path / "docs"))
+    mailer = FakeMailer()
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_storage_dep] = lambda: storage
     app.dependency_overrides[get_llm] = lambda: FakeLLM()
+    app.dependency_overrides[get_mailer] = lambda: mailer
 
     # Patch the processor's LLM + session factory so the background task uses
     # the same in-memory DB and fake LLM.
@@ -101,11 +105,9 @@ def client(tmp_path):
 
 
 def _admin_header(client):
-    r = client.post(
-        "/api/v1/auth/register",
-        json={"email": "a@x.com", "full_name": "Admin", "password": "password123", "role": "admin"},
-    )
-    return {"Authorization": f"Bearer {r.json()['tokens']['access_token']}"}
+    mailer = app.dependency_overrides[get_mailer]()
+    data = register_via_otp(client, mailer, "a@x.com", role="admin", full_name="Admin")
+    return {"Authorization": f"Bearer {data['tokens']['access_token']}"}
 
 
 def _seed_case(client, h):

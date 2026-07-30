@@ -12,12 +12,14 @@ from sqlalchemy.pool import StaticPool
 
 import app.models  # noqa: F401
 from app.ai.base import ChatMessage
+from app.core.mailer import get_mailer
 from app.database.base import Base
 from app.database.session import get_db
 from app.deadlines.ai_schemas import DeadlineExtraction, ExtractedDeadline
 from app.deadlines.enums import DeadlineSource
 from app.deadlines.service import DeadlineService
 from app.main import app
+from tests._auth_helpers import FakeMailer, register_via_otp
 
 FUTURE = (datetime.now(UTC) + timedelta(days=10)).date().isoformat()
 SOON = (datetime.now(UTC) + timedelta(days=2)).date().isoformat()
@@ -82,17 +84,17 @@ def client(db_session):
         finally:
             db.close()
 
+    mailer = FakeMailer()
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_mailer] = lambda: mailer
     yield TestClient(app)
     app.dependency_overrides.clear()
 
 
 def _admin(client):
-    r = client.post(
-        "/api/v1/auth/register",
-        json={"email": "a@x.com", "full_name": "Ada Admin", "password": "password123", "role": "admin"},
-    )
-    return {"Authorization": f"Bearer {r.json()['tokens']['access_token']}"}
+    mailer = app.dependency_overrides[get_mailer]()
+    data = register_via_otp(client, mailer, "a@x.com", role="admin", full_name="Ada Admin")
+    return {"Authorization": f"Bearer {data['tokens']['access_token']}"}
 
 
 def _case(client, h):

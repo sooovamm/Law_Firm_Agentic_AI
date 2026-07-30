@@ -14,9 +14,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import app.models  # noqa: F401
+from app.core.mailer import get_mailer
 from app.database.base import Base
 from app.database.session import get_db
 from app.main import app
+from tests._auth_helpers import FakeMailer, register_via_otp
 
 
 @pytest.fixture
@@ -34,17 +36,17 @@ def client():
         finally:
             db.close()
 
+    mailer = FakeMailer()
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_mailer] = lambda: mailer
     yield TestClient(app)
     app.dependency_overrides.clear()
 
 
 def _admin(client):
-    r = client.post(
-        "/api/v1/auth/register",
-        json={"email": "a@x.com", "full_name": "Ada Admin", "password": "password123", "role": "admin"},
-    )
-    return {"Authorization": f"Bearer {r.json()['tokens']['access_token']}"}, r.json()["user"]["id"]
+    mailer = app.dependency_overrides[get_mailer]()
+    data = register_via_otp(client, mailer, "a@x.com", role="admin", full_name="Ada Admin")
+    return {"Authorization": f"Bearer {data['tokens']['access_token']}"}, data["user"]["id"]
 
 
 def _make_case(client, h, *, title="Matter", urgency="medium", status="open", lawyer_id=None):

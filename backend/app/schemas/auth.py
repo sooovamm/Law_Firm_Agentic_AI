@@ -12,6 +12,15 @@ class RegisterRequest(BaseModel):
     role: UserRole = UserRole.PARALEGAL
 
 
+class RegisterVerifyRequest(RegisterRequest):
+    otp_code: str = Field(min_length=4, max_length=4, pattern=r"^\d{4}$")
+
+
+class OtpRequestResponse(BaseModel):
+    message: str
+    expires_in_minutes: int
+
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1)

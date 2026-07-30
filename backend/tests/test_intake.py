@@ -23,9 +23,11 @@ from app.conversations.ai_schemas import (
     PracticeAreaDetection,
 )
 from app.conversations.enums import IntakePracticeArea, Urgency
+from app.core.mailer import get_mailer
 from app.database.base import Base
 from app.database.session import get_db
 from app.main import app
+from tests._auth_helpers import FakeMailer, register_via_otp
 
 
 class FakeLLM:
@@ -86,18 +88,24 @@ def client():
         finally:
             db.close()
 
+    mailer = FakeMailer()
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_llm] = lambda: FakeLLM()
+    app.dependency_overrides[get_mailer] = lambda: mailer
     yield TestClient(app)
     app.dependency_overrides.clear()
 
 
 def _admin_header(client):
-    r = client.post(
-        "/api/v1/auth/register",
-        json={"email": "a@x.com", "full_name": "Admin", "password": "password123", "role": "admin"},
-    )
-    return {"Authorization": f"Bearer {r.json()['tokens']['access_token']}"}
+    mailer = app.dependency_overrides[get_mailer]()
+    data = register_via_otp(client, mailer, "a@x.com", role="admin", full_name="Admin")
+    return {"Authorization": f"Bearer {data['tokens']['access_token']}"}
+
+
+def _user_header(client, email):
+    mailer = app.dependency_overrides[get_mailer]()
+    data = register_via_otp(client, mailer, email, role="admin", full_name="User")
+    return {"Authorization": f"Bearer {data['tokens']['access_token']}"}
 
 
 def test_full_intake_flow(client):
@@ -152,6 +160,35 @@ def test_conversation_history_and_detail(client):
     assert body["id"] == conv_id
     # Greeting + first user + assistant follow-up all persisted.
     assert len(body["messages"]) >= 2
+
+
+def test_conversation_isolated_between_users(client):
+    h_a = _user_header(client, "user-a@x.com")
+    h_b = _user_header(client, "user-b@x.com")
+
+    r = client.post("/api/v1/chat/message", headers=h_a, json={"message": "I need help with a divorce."})
+    conv_id = r.json()["conversation_id"]
+
+    # User B's history must not include user A's conversation.
+    hist_b = client.get("/api/v1/conversation/history", headers=h_b)
+    assert hist_b.status_code == 200
+    assert all(c["id"] != conv_id for c in hist_b.json())
+
+    # User B cannot fetch user A's conversation detail directly.
+    detail_b = client.get(f"/api/v1/conversation/{conv_id}", headers=h_b)
+    assert detail_b.status_code == 404
+
+    # User B cannot post a message into user A's conversation.
+    msg_b = client.post(
+        "/api/v1/chat/message",
+        headers=h_b,
+        json={"conversation_id": conv_id, "message": "hijack attempt"},
+    )
+    assert msg_b.status_code == 404
+
+    # User A can still see and continue their own conversation.
+    detail_a = client.get(f"/api/v1/conversation/{conv_id}", headers=h_a)
+    assert detail_a.status_code == 200
 
 
 def test_chat_requires_auth(client):

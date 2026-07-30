@@ -5,6 +5,7 @@ from app.models.activity import ActivityLog
 from app.models.case import Case
 from app.models.case_activity import CaseEvent, CaseNote
 from app.models.client import Client
+from app.models.email_otp import EmailOtp
 from app.models.enums import CaseStatus, PracticeArea, UserRole
 from app.models.user import User
 from app.scheduling.model import Consultation
@@ -28,4 +29,5 @@ __all__ = [
     "Consultation",
     "Email",
     "Deadline",
+    "EmailOtp",
 ]

@@ -59,6 +59,18 @@ class Settings(BaseSettings):
     aws_secret_access_key: str = ""
     aws_s3_endpoint_url: str = ""  # optional, for S3-compatible stores
 
+    # SMTP (email delivery, e.g. registration OTPs)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_use_tls: bool = True
+
+    # Registration OTP
+    otp_expire_minutes: int = 10
+    otp_max_attempts: int = 5
+
     # Logging
     log_level: str = "INFO"
 

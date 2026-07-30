@@ -13,6 +13,7 @@ from sqlalchemy.pool import StaticPool
 import app.models  # noqa: F401
 from app.ai.base import ChatMessage
 from app.api.v1.emails import get_llm
+from app.core.mailer import get_mailer
 from app.database.base import Base
 from app.database.session import get_db
 from app.email_agent.ai_schemas import (
@@ -28,6 +29,7 @@ from app.email_agent.ai_schemas import (
 )
 from app.email_agent.enums import EmailUrgency
 from app.main import app
+from tests._auth_helpers import FakeMailer, register_via_otp
 
 
 class FakeLLM:
@@ -70,18 +72,18 @@ def client():
         finally:
             db.close()
 
+    mailer = FakeMailer()
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_llm] = lambda: FakeLLM()
+    app.dependency_overrides[get_mailer] = lambda: mailer
     yield TestClient(app)
     app.dependency_overrides.clear()
 
 
 def _admin(client):
-    r = client.post(
-        "/api/v1/auth/register",
-        json={"email": "a@x.com", "full_name": "Ada Admin", "password": "password123", "role": "admin"},
-    )
-    return {"Authorization": f"Bearer {r.json()['tokens']['access_token']}"}
+    mailer = app.dependency_overrides[get_mailer]()
+    data = register_via_otp(client, mailer, "a@x.com", role="admin", full_name="Ada Admin")
+    return {"Authorization": f"Bearer {data['tokens']['access_token']}"}
 
 
 def _seed_client_and_case(client, h):

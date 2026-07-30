@@ -11,11 +11,18 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (payload: {
+  requestRegistrationOtp: (payload: {
     email: string;
     full_name: string;
     password: string;
     role?: string;
+  }) => Promise<{ expires_in_minutes: number }>;
+  verifyRegistrationOtp: (payload: {
+    email: string;
+    full_name: string;
+    password: string;
+    role?: string;
+    otp_code: string;
   }) => Promise<void>;
   logout: () => void;
 }
@@ -56,13 +63,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/dashboard");
   }
 
-  async function register(payload: {
+  async function requestRegistrationOtp(payload: {
     email: string;
     full_name: string;
     password: string;
     role?: string;
   }) {
-    const resp = await api.register(payload);
+    const resp = await api.requestRegistrationOtp(payload);
+    return { expires_in_minutes: resp.expires_in_minutes };
+  }
+
+  async function verifyRegistrationOtp(payload: {
+    email: string;
+    full_name: string;
+    password: string;
+    role?: string;
+    otp_code: string;
+  }) {
+    const resp = await api.verifyRegistrationOtp(payload);
     tokenStore.set(resp.tokens);
     setUser(resp.user);
     router.push("/dashboard");
@@ -75,7 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, requestRegistrationOtp, verifyRegistrationOtp, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
