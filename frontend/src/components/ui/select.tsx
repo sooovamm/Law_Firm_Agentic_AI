@@ -15,8 +15,9 @@ export const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-9 w-full items-center justify-between rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm",
-      "focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-9 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-soft transition-colors dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100",
+      "focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:opacity-50",
+      "data-[placeholder]:text-slate-400 dark:data-[placeholder]:text-slate-500",
       className,
     )}
     {...props}
@@ -38,7 +39,7 @@ export const SelectContent = React.forwardRef<
       ref={ref}
       position={position}
       className={cn(
-        "z-50 min-w-[8rem] overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-md",
+        "z-50 min-w-[8rem] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-floating dark:border-slate-700 dark:bg-slate-900",
         position === "popper" && "translate-y-1",
         className,
       )}
@@ -57,8 +58,8 @@ export const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-pointer select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm",
-      "outline-none focus:bg-slate-100 dark:focus:bg-slate-800 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "relative flex cursor-pointer select-none items-center rounded-md py-1.5 pl-8 pr-2 text-sm text-slate-700 dark:text-slate-300",
+      "outline-none focus:bg-brand-50 focus:text-brand-900 dark:focus:bg-brand-500/10 dark:focus:text-brand-200 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className,
     )}
     {...props}

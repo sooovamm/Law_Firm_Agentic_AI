@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Check, CheckCheck, Clock, X, XCircle } from "lucide-react";
+import { Check, CheckCheck, Clock, XCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetBody, SheetFooter } from "@/components/ui/sheet";
 import {
   consultationStatusVariant,
   formatDateTime,
@@ -28,8 +29,7 @@ export function ConsultationDrawer({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isTerminal =
-    consultation.status === "completed" || consultation.status === "cancelled";
+  const isTerminal = consultation.status === "completed" || consultation.status === "cancelled";
 
   async function setStatus(status: string) {
     setBusy(true);
@@ -60,24 +60,21 @@ export function ConsultationDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
-      <div className="flex h-full w-full max-w-md flex-col bg-white dark:bg-slate-900 shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Consultation</h2>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <Sheet open onOpenChange={(next) => !next && onClose()}>
+      <SheetContent size="md">
+        <SheetHeader>
+          <SheetTitle>Consultation</SheetTitle>
+        </SheetHeader>
 
-        <div className="flex-1 space-y-4 overflow-y-auto px-5 py-5 text-sm">
+        <SheetBody className="space-y-4 text-sm">
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-red-700 dark:text-red-400">{error}</div>
+            <div className="rounded-xl bg-rose-50 px-3 py-2 text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+              {error}
+            </div>
           )}
 
           <div className="flex items-center gap-2">
-            <Badge variant={consultationStatusVariant[consultation.status]}>
-              {consultation.status}
-            </Badge>
+            <Badge variant={consultationStatusVariant[consultation.status]}>{consultation.status}</Badge>
             <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
               <Clock className="h-3.5 w-3.5" />
               {consultation.duration_minutes} min
@@ -85,47 +82,47 @@ export function ConsultationDrawer({
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">When</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">When</p>
             <p className="mt-0.5 text-slate-900 dark:text-slate-100">{formatDateTime(consultation.scheduled_time)}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">Lawyer</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Lawyer</p>
               <p className="mt-0.5 text-slate-900 dark:text-slate-100">{consultation.lawyer_name ?? "—"}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">Client</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Client</p>
               <p className="mt-0.5 text-slate-900 dark:text-slate-100">{consultation.client_name ?? "—"}</p>
             </div>
           </div>
 
           {consultation.case_title && (
             <div>
-              <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">Case</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Case</p>
               <p className="mt-0.5 text-slate-900 dark:text-slate-100">{consultation.case_title}</p>
             </div>
           )}
 
           {consultation.notes && (
             <div>
-              <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">Notes</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Notes</p>
               <p className="mt-0.5 whitespace-pre-wrap text-slate-700 dark:text-slate-300">{consultation.notes}</p>
             </div>
           )}
-        </div>
+        </SheetBody>
 
         {!isTerminal && (
-          <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 px-5 py-4">
+          <SheetFooter className="flex-col items-stretch gap-2">
             {consultation.status === "pending" && canApprove && (
               <Button className="w-full" onClick={() => setStatus("confirmed")} disabled={busy}>
-                <Check className="mr-1.5 h-4 w-4" />
+                <Check className="h-4 w-4" />
                 Approve booking
               </Button>
             )}
             {consultation.status === "confirmed" && (
               <Button className="w-full" onClick={() => setStatus("completed")} disabled={busy}>
-                <CheckCheck className="mr-1.5 h-4 w-4" />
+                <CheckCheck className="h-4 w-4" />
                 Mark completed
               </Button>
             )}
@@ -134,7 +131,7 @@ export function ConsultationDrawer({
                 Reschedule
               </Button>
               <Button variant="danger" className="flex-1" onClick={cancel} disabled={busy}>
-                <XCircle className="mr-1.5 h-4 w-4" />
+                <XCircle className="h-4 w-4" />
                 Cancel
               </Button>
             </div>
@@ -143,9 +140,9 @@ export function ConsultationDrawer({
                 Only a lawyer can approve this booking.
               </p>
             )}
-          </div>
+          </SheetFooter>
         )}
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 }

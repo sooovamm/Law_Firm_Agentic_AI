@@ -1,9 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CalendarClock, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input, Label } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -11,10 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatTime, toDateInput } from "@/components/scheduling/helpers";
+import { SlotPicker } from "@/components/scheduling/slot-picker";
+import { toDateInput } from "@/components/scheduling/helpers";
 import { api, ApiError } from "@/lib/api";
 import type { AvailableSlot, Client, User } from "@/types";
-import { cn } from "@/lib/utils";
 
 interface BookingDialogProps {
   open: boolean;
@@ -60,8 +68,6 @@ export function BookingDialog({ open, onClose, onBooked, lawyers, clients }: Boo
     if (open) loadSlots();
   }, [open, loadSlots]);
 
-  if (!open) return null;
-
   async function handleBook() {
     if (!lawyerId || !selectedSlot) return;
     setBooking(true);
@@ -75,11 +81,9 @@ export function BookingDialog({ open, onClose, onBooked, lawyers, clients }: Boo
       });
       onBooked();
       onClose();
-      // Reset for next time.
       setSelectedSlot(null);
     } catch (err) {
       setError(err instanceof ApiError ? err.detail : "Booking failed");
-      // Refresh slots in case the conflict was a race.
       loadSlots();
     } finally {
       setBooking(false);
@@ -87,26 +91,22 @@ export function BookingDialog({ open, onClose, onBooked, lawyers, clients }: Boo
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-900 shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="h-5 w-5 text-brand" />
-            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Book Consultation</h2>
-          </div>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+      <DialogContent size="lg">
+        <DialogHeader>
+          <DialogTitle>Book Consultation</DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-4 px-5 py-5">
+        <DialogBody className="space-y-4">
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
+            <div className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+              {error}
+            </div>
           )}
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Lawyer</label>
+              <Label>Lawyer</Label>
               <Select value={lawyerId} onValueChange={setLawyerId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select lawyer" />
@@ -121,9 +121,7 @@ export function BookingDialog({ open, onClose, onBooked, lawyers, clients }: Boo
               </Select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                Client (optional)
-              </label>
+              <Label>Client (optional)</Label>
               <Select value={clientId} onValueChange={setClientId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select client" />
@@ -141,17 +139,17 @@ export function BookingDialog({ open, onClose, onBooked, lawyers, clients }: Boo
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Date</label>
-              <input
+              <Label htmlFor="booking-date">Date</Label>
+              <Input
+                id="booking-date"
                 type="date"
                 value={date}
                 min={toDateInput(new Date())}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Duration</label>
+              <Label>Duration</Label>
               <Select value={String(duration)} onValueChange={(v) => setDuration(Number(v))}>
                 <SelectTrigger>
                   <SelectValue />
@@ -167,47 +165,24 @@ export function BookingDialog({ open, onClose, onBooked, lawyers, clients }: Boo
             </div>
           </div>
 
-          {/* Available slots */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Available slots
-            </label>
-            {!lawyerId ? (
-              <p className="text-sm text-slate-400 dark:text-slate-500">Select a lawyer to see availability.</p>
-            ) : loadingSlots ? (
-              <p className="text-sm text-slate-400 dark:text-slate-500">Loading slots...</p>
-            ) : slots.length === 0 ? (
-              <p className="text-sm text-slate-400 dark:text-slate-500">No open slots for this day.</p>
-            ) : (
-              <div className="grid max-h-40 grid-cols-4 gap-2 overflow-y-auto">
-                {slots.map((s) => (
-                  <button
-                    key={s.start}
-                    onClick={() => setSelectedSlot(s.start)}
-                    className={cn(
-                      "rounded-md border px-2 py-1.5 text-sm transition-colors",
-                      selectedSlot === s.start
-                        ? "border-brand bg-brand text-white"
-                        : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:border-brand hover:text-brand",
-                    )}
-                  >
-                    {formatTime(s.start)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+          <SlotPicker
+            slots={slots}
+            selected={selectedSlot}
+            onSelect={setSelectedSlot}
+            loading={loadingSlots}
+            emptyHint={!lawyerId ? "Select a lawyer to see availability." : undefined}
+          />
+        </DialogBody>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-4">
+        <DialogFooter>
           <Button variant="secondary" onClick={onClose} disabled={booking}>
             Cancel
           </Button>
-          <Button onClick={handleBook} disabled={!selectedSlot || booking}>
-            {booking ? "Booking..." : "Book"}
+          <Button onClick={handleBook} loading={booking} disabled={!selectedSlot}>
+            Book
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

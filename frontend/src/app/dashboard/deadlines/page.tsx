@@ -1,16 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, LayoutList, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { SkeletonRow } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DeadlineBucketsView } from "@/components/deadlines/bucket-view";
 import { DeadlineCalendar } from "@/components/deadlines/calendar";
 import { AddDeadlineDialog } from "@/components/deadlines/add-deadline-dialog";
 import { api, ApiError } from "@/lib/api";
 import type { CaseListItem, Deadline, DeadlineBuckets } from "@/types";
-import { cn } from "@/lib/utils";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -84,45 +85,32 @@ export default function DeadlinesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Court Deadlines</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Court Deadlines</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             AI-extracted from documents and emails, plus anything you add.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1">
-            <button
-              onClick={() => setView("list")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                view === "list" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-600 dark:text-slate-400",
-              )}
-            >
-              <LayoutList className="h-4 w-4" />
-              Alerts
-            </button>
-            <button
-              onClick={() => setView("calendar")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                view === "calendar" ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-600 dark:text-slate-400",
-              )}
-            >
-              Calendar
-            </button>
-          </div>
+          <Tabs value={view} onValueChange={(v) => setView(v as "list" | "calendar")}>
+            <TabsList>
+              <TabsTrigger value="list">Alerts</TabsTrigger>
+              <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            </TabsList>
+          </Tabs>
           <Button onClick={() => setAdding(true)}>
-            <Plus className="mr-1.5 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             Add
           </Button>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
+        <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+          {error}
+        </div>
       )}
 
       {view === "list" ? (
@@ -134,23 +122,28 @@ export default function DeadlinesPage() {
             onToggleComplete={toggleComplete}
           />
         ) : (
-          <Card>
-            <CardContent className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
-              Loading deadlines...
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <CardContent className="p-0">
+                  <SkeletonRow />
+                  <SkeletonRow />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Button variant="ghost" onClick={() => shiftMonth(-1)} aria-label="Previous month">
+              <Button variant="ghost" size="icon" onClick={() => shiftMonth(-1)} aria-label="Previous month">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <span className="min-w-[160px] text-center text-sm font-medium text-slate-700 dark:text-slate-300">
                 {MONTHS[cursor.month]} {cursor.year}
               </span>
-              <Button variant="ghost" onClick={() => shiftMonth(1)} aria-label="Next month">
+              <Button variant="ghost" size="icon" onClick={() => shiftMonth(1)} aria-label="Next month">
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -164,21 +157,11 @@ export default function DeadlinesPage() {
               Today
             </Button>
           </div>
-          <DeadlineCalendar
-            year={cursor.year}
-            month={cursor.month}
-            deadlines={calendarItems}
-          />
+          <DeadlineCalendar year={cursor.year} month={cursor.month} deadlines={calendarItems} />
         </div>
       )}
 
-      {adding && (
-        <AddDeadlineDialog
-          cases={cases}
-          onClose={() => setAdding(false)}
-          onCreated={refreshAll}
-        />
-      )}
+      {adding && <AddDeadlineDialog cases={cases} onClose={() => setAdding(false)} onCreated={refreshAll} />}
     </div>
   );
 }

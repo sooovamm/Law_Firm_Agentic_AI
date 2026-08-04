@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { BookingDialog } from "@/components/scheduling/booking-dialog";
 import { RescheduleDialog } from "@/components/scheduling/reschedule-dialog";
 import { WeekCalendar } from "@/components/scheduling/week-calendar";
@@ -91,27 +90,27 @@ export default function ConsultationsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Consultations</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Consultations</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">Schedule and manage client consultations.</p>
         </div>
         <Button onClick={() => setBooking(true)}>
-          <Plus className="mr-1.5 h-4 w-4" />
+          <Plus className="h-4 w-4" />
           Book Consultation
         </Button>
       </div>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={() => shiftWeek(-1)} aria-label="Previous week">
+          <Button variant="ghost" size="icon" onClick={() => shiftWeek(-1)} aria-label="Previous week">
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="min-w-[140px] text-center text-sm font-medium text-slate-700 dark:text-slate-300">
             {label}
           </span>
-          <Button variant="ghost" onClick={() => shiftWeek(1)} aria-label="Next week">
+          <Button variant="ghost" size="icon" onClick={() => shiftWeek(1)} aria-label="Next week">
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -121,15 +120,17 @@ export default function ConsultationsPage() {
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
+        <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+          {error}
+        </div>
       )}
 
       {loading ? (
-        <Card>
-          <CardContent className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
-            Loading schedule...
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-7">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="h-[140px] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/60" />
+          ))}
+        </div>
       ) : (
         <WeekCalendar weekStart={weekStart} consultations={consultations} onSelect={setSelected} />
       )}

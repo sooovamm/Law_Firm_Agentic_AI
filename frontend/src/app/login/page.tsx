@@ -31,19 +31,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
+    <div className="gradient-mesh relative flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
       <ThemeToggle className="absolute right-4 top-4" />
-      <div className="w-full max-w-md">
-        <div className="mb-6 flex flex-col items-center">
-          <Scale className="h-10 w-10 text-brand" />
-          <h1 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">Legal CMS</h1>
+      <div className="w-full max-w-md animate-slide-up">
+        <div className="mb-8 flex flex-col items-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-600 to-brand-800 text-white shadow-glow">
+            <Scale className="h-6 w-6" strokeWidth={2.25} />
+          </div>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Legal CMS</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">Sign in to your account</p>
         </div>
 
         <Card>
-          <CardContent className="space-y-4 py-6">
+          <CardContent className="space-y-4 py-7">
             {error && (
-              <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
+              <div className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+                {error}
+              </div>
             )}
             <div>
               <Label htmlFor="email">Email</Label>
@@ -67,12 +71,12 @@ export default function LoginPage() {
                 placeholder="********"
               />
             </div>
-            <Button className="w-full" onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Signing in..." : "Sign in"}
+            <Button className="w-full" onClick={handleSubmit} loading={submitting}>
+              Sign in
             </Button>
             <p className="text-center text-sm text-slate-500 dark:text-slate-400">
               No account?{" "}
-              <Link href="/register" className="font-medium text-brand hover:underline">
+              <Link href="/register" className="font-medium text-brand-600 hover:underline dark:text-brand-400">
                 Register
               </Link>
             </p>

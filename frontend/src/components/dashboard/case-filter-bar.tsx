@@ -1,7 +1,5 @@
 "use client";
 
-import { Search } from "lucide-react";
-
 import {
   Select,
   SelectContent,
@@ -9,6 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SearchInput } from "@/components/ui/search-input";
+import { Input } from "@/components/ui/input";
 import type { User } from "@/types";
 
 export interface CaseFilters {
@@ -51,13 +51,11 @@ export function CaseFilterBar({
 
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
-      <div className="relative lg:col-span-2">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
-        <input
+      <div className="lg:col-span-2">
+        <SearchInput
           value={filters.q}
           onChange={(e) => set({ q: e.target.value })}
           placeholder="Search cases..."
-          className="w-full rounded-md border border-slate-300 dark:border-slate-600 py-2 pl-9 pr-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
         />
       </div>
 
@@ -120,11 +118,11 @@ export function CaseFilterBar({
         </SelectContent>
       </Select>
 
-      <input
+      <Input
         type="date"
         value={filters.created_from}
         onChange={(e) => set({ created_from: e.target.value })}
-        className="rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm text-slate-600 dark:text-slate-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand lg:col-span-1"
+        className="text-slate-600 dark:text-slate-400 lg:col-span-1"
       />
     </div>
   );

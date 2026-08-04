@@ -1,9 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CalendarClock, X } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Input, Label } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -61,57 +69,43 @@ export function AddDeadlineDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-900 shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="h-5 w-5 text-brand" />
-            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Add Deadline</h2>
-          </div>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <Dialog open onOpenChange={(next) => !next && onClose()}>
+      <DialogContent size="lg">
+        <DialogHeader>
+          <DialogTitle>Add Deadline</DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-4 px-5 py-5">
+        <DialogBody className="space-y-4">
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
+            <div className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+              {error}
+            </div>
           )}
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Title</label>
-            <input
+            <Label htmlFor="deadline-title">Title</Label>
+            <Input
+              id="deadline-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. File response to motion"
-              className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Date</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
+              <Label htmlFor="deadline-date">Date</Label>
+              <Input id="deadline-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Time</label>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-              />
+              <Label htmlFor="deadline-time">Time</Label>
+              <Input id="deadline-time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Type</label>
+              <Label>Type</Label>
               <Select value={type} onValueChange={setType}>
                 <SelectTrigger>
                   <SelectValue />
@@ -126,7 +120,7 @@ export function AddDeadlineDialog({
               </Select>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Priority</label>
+              <Label>Priority</Label>
               <Select value={priority} onValueChange={setPriority}>
                 <SelectTrigger>
                   <SelectValue />
@@ -143,9 +137,7 @@ export function AddDeadlineDialog({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Case (optional)
-            </label>
+            <Label>Case (optional)</Label>
             <Select value={caseId} onValueChange={setCaseId}>
               <SelectTrigger>
                 <SelectValue placeholder="Link to a case" />
@@ -159,17 +151,17 @@ export function AddDeadlineDialog({
               </SelectContent>
             </Select>
           </div>
-        </div>
+        </DialogBody>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-4">
+        <DialogFooter>
           <Button variant="secondary" onClick={onClose} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={save} disabled={saving}>
-            {saving ? "Saving..." : "Add Deadline"}
+          <Button onClick={save} loading={saving}>
+            Add Deadline
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

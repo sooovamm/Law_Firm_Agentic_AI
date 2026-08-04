@@ -1,13 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CalendarClock, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { formatTime, toDateInput } from "@/components/scheduling/helpers";
+import { Input, Label } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { SlotPicker } from "@/components/scheduling/slot-picker";
+import { toDateInput } from "@/components/scheduling/helpers";
 import { api, ApiError } from "@/lib/api";
 import type { AvailableSlot, Consultation } from "@/types";
-import { cn } from "@/lib/utils";
 
 export function RescheduleDialog({
   consultation,
@@ -18,9 +26,7 @@ export function RescheduleDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
-  const [date, setDate] = useState<string>(
-    toDateInput(new Date(consultation.scheduled_time)),
-  );
+  const [date, setDate] = useState<string>(toDateInput(new Date(consultation.scheduled_time)));
   const [slots, setSlots] = useState<AvailableSlot[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,11 +38,7 @@ export function RescheduleDialog({
     setSelected(null);
     try {
       const dayIso = new Date(`${date}T12:00:00`).toISOString();
-      const resp = await api.getAvailability(
-        consultation.lawyer_id,
-        dayIso,
-        consultation.duration_minutes,
-      );
+      const resp = await api.getAvailability(consultation.lawyer_id, dayIso, consultation.duration_minutes);
       setSlots(resp.slots);
       setError(null);
     } catch (err) {
@@ -67,72 +69,42 @@ export function RescheduleDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white dark:bg-slate-900 shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <CalendarClock className="h-5 w-5 text-brand" />
-            <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Reschedule</h2>
-          </div>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <Dialog open onOpenChange={(next) => !next && onClose()}>
+      <DialogContent size="md">
+        <DialogHeader>
+          <DialogTitle>Reschedule</DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-4 px-5 py-5">
+        <DialogBody className="space-y-4">
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
+            <div className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+              {error}
+            </div>
           )}
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">New date</label>
-            <input
+            <Label htmlFor="reschedule-date">New date</Label>
+            <Input
+              id="reschedule-date"
               type="date"
               value={date}
               min={toDateInput(new Date())}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </div>
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Available slots
-            </label>
-            {loading ? (
-              <p className="text-sm text-slate-400 dark:text-slate-500">Loading...</p>
-            ) : slots.length === 0 ? (
-              <p className="text-sm text-slate-400 dark:text-slate-500">No open slots for this day.</p>
-            ) : (
-              <div className="grid max-h-40 grid-cols-4 gap-2 overflow-y-auto">
-                {slots.map((s) => (
-                  <button
-                    key={s.start}
-                    onClick={() => setSelected(s.start)}
-                    className={cn(
-                      "rounded-md border px-2 py-1.5 text-sm transition-colors",
-                      selected === s.start
-                        ? "border-brand bg-brand text-white"
-                        : "border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:border-brand hover:text-brand",
-                    )}
-                  >
-                    {formatTime(s.start)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+          <SlotPicker slots={slots} selected={selected} onSelect={setSelected} loading={loading} />
+        </DialogBody>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-4">
+        <DialogFooter>
           <Button variant="secondary" onClick={onClose} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleReschedule} disabled={!selected || saving}>
-            {saving ? "Saving..." : "Reschedule"}
+          <Button onClick={handleReschedule} loading={saving} disabled={!selected}>
+            Reschedule
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

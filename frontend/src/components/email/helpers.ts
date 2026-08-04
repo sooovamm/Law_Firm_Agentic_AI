@@ -1,5 +1,8 @@
 import type { BadgeProps } from "@/components/ui/badge";
 import type { EmailStatus, EmailUrgency } from "@/types";
+import { formatDateTime } from "@/lib/date";
+
+export const formatEmailDate = formatDateTime;
 
 type Variant = NonNullable<BadgeProps["variant"]>;
 
@@ -16,12 +19,3 @@ export const emailUrgencyVariant: Record<EmailUrgency, Variant> = {
   high: "warning",
   critical: "danger",
 };
-
-export function formatEmailDate(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}

@@ -4,15 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MessageSquarePlus, Plus } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ListRow, ListRowSubtitle, ListRowTitle } from "@/components/ui/list-row";
+import { SkeletonRow } from "@/components/ui/skeleton";
 import { api, ApiError } from "@/lib/api";
-import type { ConversationSummaryItem } from "@/types";
-import { cn } from "@/lib/utils";
+import type { ConversationStatus, ConversationSummaryItem } from "@/types";
 
-const statusStyles: Record<string, string> = {
-  active: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400",
-  completed: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400",
-  abandoned: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400",
+const statusVariant: Record<ConversationStatus, NonNullable<BadgeProps["variant"]>> = {
+  active: "success",
+  completed: "default",
+  abandoned: "warning",
 };
 
 export default function IntakePage() {
@@ -42,74 +46,60 @@ export default function IntakePage() {
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">AI Client Intake</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">AI Client Intake</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Start a guided intake or review past conversations.
           </p>
         </div>
-        <Link
-          href="/dashboard/intake/new"
-          className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
-        >
-          <Plus className="h-4 w-4" />
-          New Intake
-        </Link>
+        <Button asChild>
+          <Link href="/dashboard/intake/new" className="inline-flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            New Intake
+          </Link>
+        </Button>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
+        <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+          {error}
+        </div>
       )}
 
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="p-6 text-sm text-slate-500 dark:text-slate-400">Loading conversations...</div>
-          ) : conversations.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 p-10 text-center">
-              <MessageSquarePlus className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">No conversations yet.</p>
-              <Link
-                href="/dashboard/intake/new"
-                className="text-sm font-medium text-brand hover:underline"
+      <Card className="overflow-hidden">
+        {loading ? (
+          <div className="divide-y divide-slate-50 dark:divide-slate-800/60">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonRow key={i} />
+            ))}
+          </div>
+        ) : conversations.length === 0 ? (
+          <EmptyState
+            icon={MessageSquarePlus}
+            title="No conversations yet"
+            description="Start a guided AI intake to capture a new client's situation and route it to the right lawyer."
+            primaryAction={
+              <Button asChild>
+                <Link href="/dashboard/intake/new">Start your first intake</Link>
+              </Button>
+            }
+          />
+        ) : (
+          <div className="divide-y divide-slate-50 dark:divide-slate-800/60">
+            {conversations.map((c) => (
+              <ListRow
+                key={c.id}
+                href={`/dashboard/intake/${c.id}`}
+                trailing={<Badge variant={statusVariant[c.status] ?? "default"}>{c.status}</Badge>}
               >
-                Start your first intake
-              </Link>
-            </div>
-          ) : (
-            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-              {conversations.map((c) => (
-                <li key={c.id}>
-                  <Link
-                    href={`/dashboard/intake/${c.id}`}
-                    className="flex items-center justify-between px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-950"
-                  >
-                    <div>
-                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                        Conversation #{c.id}
-                        {c.practice_area && (
-                          <span className="ml-2 capitalize text-slate-500 dark:text-slate-400">
-                            · {c.practice_area.replace(/_/g, " ")}
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">
-                        Updated {new Date(c.updated_at).toLocaleString()}
-                      </p>
-                    </div>
-                    <span
-                      className={cn(
-                        "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                        statusStyles[c.status] ?? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400",
-                      )}
-                    >
-                      {c.status}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
+                <ListRowTitle>
+                  Conversation #{c.id}
+                  {c.practice_area && <span className="ml-1 font-normal capitalize text-slate-500 dark:text-slate-400">· {c.practice_area.replace(/_/g, " ")}</span>}
+                </ListRowTitle>
+                <ListRowSubtitle>Updated {new Date(c.updated_at).toLocaleString()}</ListRowSubtitle>
+              </ListRow>
+            ))}
+          </div>
+        )}
       </Card>
     </div>
   );

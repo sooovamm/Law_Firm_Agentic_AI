@@ -38,9 +38,11 @@ export function IntakeProgress({ stage }: { stage: IntakeStage }) {
               <div
                 className={cn(
                   "flex h-6 w-6 items-center justify-center rounded-full border text-xs font-medium transition-colors",
-                  done && "border-brand bg-brand text-white",
-                  active && "border-brand bg-brand/10 text-brand",
-                  !done && !active && "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500",
+                  done && "border-brand-600 bg-brand-600 text-white dark:border-brand-500 dark:bg-brand-500",
+                  active && "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300",
+                  !done &&
+                    !active &&
+                    "border-slate-200 bg-white text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-500",
                 )}
               >
                 {done ? <Check className="h-3.5 w-3.5" /> : i + 1}
@@ -48,7 +50,7 @@ export function IntakeProgress({ stage }: { stage: IntakeStage }) {
               <span
                 className={cn(
                   "hidden text-[10px] font-medium sm:block",
-                  active ? "text-brand" : "text-slate-400 dark:text-slate-500",
+                  active ? "text-brand-600 dark:text-brand-400" : "text-slate-400 dark:text-slate-500",
                 )}
               >
                 {step.label}
@@ -57,8 +59,8 @@ export function IntakeProgress({ stage }: { stage: IntakeStage }) {
             {i < STEPS.length - 1 && (
               <div
                 className={cn(
-                  "mb-4 h-0.5 w-4 sm:w-8",
-                  i < current ? "bg-brand" : "bg-slate-200 dark:bg-slate-700",
+                  "mb-4 h-0.5 w-4 rounded-full sm:w-8",
+                  i < current ? "bg-brand-600 dark:bg-brand-500" : "bg-slate-200 dark:bg-slate-700",
                 )}
               />
             )}

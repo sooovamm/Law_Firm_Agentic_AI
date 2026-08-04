@@ -1,6 +1,8 @@
 import type { BadgeProps } from "@/components/ui/badge";
 import type { CaseStatus, CaseUrgency } from "@/types";
 
+export { labelize } from "@/lib/labelize";
+
 type Variant = NonNullable<BadgeProps["variant"]>;
 
 export const statusVariant: Record<CaseStatus, Variant> = {
@@ -16,7 +18,3 @@ export const urgencyVariant: Record<CaseUrgency, Variant> = {
   high: "warning",
   critical: "danger",
 };
-
-export function labelize(value: string): string {
-  return value.replace(/_/g, " ");
-}

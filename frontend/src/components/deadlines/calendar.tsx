@@ -2,8 +2,7 @@
 
 import { useMemo } from "react";
 
-import { Badge } from "@/components/ui/badge";
-import { priorityVariant, toDateKey } from "@/components/deadlines/helpers";
+import { toDateKey } from "@/components/deadlines/helpers";
 import type { Deadline } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -47,10 +46,10 @@ export function DeadlineCalendar({
   }, [deadlines]);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-      <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+    <div className="overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/[0.06]">
+      <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50/60 dark:border-slate-800 dark:bg-slate-800/30">
         {WEEKDAYS.map((w) => (
-          <div key={w} className="px-2 py-2 text-center text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">
+          <div key={w} className="px-2 py-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
             {w}
           </div>
         ))}
@@ -66,14 +65,14 @@ export function DeadlineCalendar({
               key={i}
               onClick={() => onSelectDay?.(key)}
               className={cn(
-                "min-h-[92px] border-b border-r border-slate-100 dark:border-slate-800 p-1.5 text-left align-top transition-colors hover:bg-slate-50 dark:hover:bg-slate-950",
-                !inMonth && "bg-slate-50 dark:bg-slate-950/50",
+                "min-h-[92px] border-b border-r border-slate-100 p-1.5 text-left align-top transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/40",
+                !inMonth && "bg-slate-50/60 dark:bg-slate-950/40",
               )}
             >
               <span
                 className={cn(
                   "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs",
-                  isToday ? "bg-brand font-semibold text-white" : "text-slate-500 dark:text-slate-400",
+                  isToday ? "bg-brand-600 font-semibold text-white dark:bg-brand-500" : "text-slate-500 dark:text-slate-400",
                   !inMonth && "text-slate-300 dark:text-slate-600",
                 )}
               >
@@ -84,8 +83,10 @@ export function DeadlineCalendar({
                   <div
                     key={item.id}
                     className={cn(
-                      "truncate rounded px-1 py-0.5 text-[10px] font-medium",
-                      item.completed ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 line-through" : "bg-brand/10 text-brand",
+                      "truncate rounded-md px-1 py-0.5 text-[10px] font-medium",
+                      item.completed
+                        ? "bg-slate-100 text-slate-400 line-through dark:bg-slate-800 dark:text-slate-500"
+                        : "bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400",
                     )}
                     title={item.title}
                   >

@@ -1,20 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Download, FileText, Plus, Search, Trash2 } from "lucide-react";
+import { Download, FileText, Plus, Trash2 } from "lucide-react";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SearchInput } from "@/components/ui/search-input";
+import { SkeletonRow } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from "@/components/ui/table";
 import { UploadDialog } from "@/components/documents/upload-dialog";
 import { DocumentDrawer } from "@/components/documents/document-drawer";
-import {
-  docTypeStyles,
-  formatBytes,
-  labelize,
-  statusStyles,
-} from "@/components/documents/helpers";
+import { docTypeVariant, formatBytes, labelize, statusVariant } from "@/components/documents/helpers";
 import { api, ApiError } from "@/lib/api";
 import type { DocumentItem } from "@/types";
-import { cn } from "@/lib/utils";
 import { downloadBlob } from "@/lib/download-file";
 
 export default function DocumentsPage() {
@@ -71,120 +71,114 @@ export default function DocumentsPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Document Manager</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Document Manager</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Upload, search, and review AI-processed case documents.
           </p>
         </div>
-        <button
-          onClick={() => setUploadOpen(true)}
-          className="inline-flex items-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark"
-        >
+        <Button onClick={() => setUploadOpen(true)}>
           <Plus className="h-4 w-4" />
           Upload
-        </button>
+        </Button>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by filename, summary, or contents..."
-          className="w-full rounded-md border border-slate-300 dark:border-slate-600 py-2 pl-9 pr-3 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search by filename, summary, or contents..."
+      />
 
       {error && (
-        <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">{error}</div>
+        <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+          {error}
+        </div>
       )}
 
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="p-6 text-sm text-slate-500 dark:text-slate-400">Loading documents...</div>
-          ) : documents.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 p-10 text-center">
-              <FileText className="h-8 w-8 text-slate-300 dark:text-slate-600" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {search ? "No documents match your search." : "No documents yet."}
-              </p>
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="border-b border-slate-100 dark:border-slate-800 text-left text-xs uppercase text-slate-400 dark:text-slate-500">
-                <tr>
-                  <th className="px-5 py-3 font-medium">Filename</th>
-                  <th className="px-5 py-3 font-medium">Type</th>
-                  <th className="px-5 py-3 font-medium">Status</th>
-                  <th className="px-5 py-3 font-medium">Size</th>
-                  <th className="px-5 py-3 font-medium">Uploaded</th>
-                  <th className="px-5 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50 dark:divide-slate-900">
-                {documents.map((d) => (
-                  <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-950">
-                    <td className="px-5 py-3">
+      <Card className="overflow-hidden">
+        {loading ? (
+          <div className="divide-y divide-slate-50 dark:divide-slate-800/60">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <SkeletonRow key={i} />
+            ))}
+          </div>
+        ) : documents.length === 0 ? (
+          <EmptyState
+            icon={FileText}
+            title={search ? "No documents match your search" : "No documents yet"}
+            description={
+              search
+                ? "Try a different filename or keyword."
+                : "Upload contracts, evidence, or correspondence to have AI extract key facts automatically."
+            }
+            primaryAction={
+              !search && (
+                <Button onClick={() => setUploadOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                  Upload a document
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <Table>
+            <TableHead>
+              <tr>
+                <TableHeadCell>Filename</TableHeadCell>
+                <TableHeadCell>Type</TableHeadCell>
+                <TableHeadCell>Status</TableHeadCell>
+                <TableHeadCell>Size</TableHeadCell>
+                <TableHeadCell>Uploaded</TableHeadCell>
+                <TableHeadCell />
+              </tr>
+            </TableHead>
+            <TableBody>
+              {documents.map((d) => (
+                <TableRow key={d.id}>
+                  <TableCell>
+                    <button
+                      onClick={() => setSelectedId(d.id)}
+                      className="font-medium text-slate-900 hover:text-brand-600 hover:underline dark:text-slate-100 dark:hover:text-brand-400"
+                    >
+                      {d.filename}
+                    </button>
+                  </TableCell>
+                  <TableCell>
+                    {d.document_type ? (
+                      <Badge variant={docTypeVariant[d.document_type]}>{labelize(d.document_type)}</Badge>
+                    ) : (
+                      <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={statusVariant[d.processing_status]}>{d.processing_status}</Badge>
+                  </TableCell>
+                  <TableCell className="text-slate-500 dark:text-slate-400">{formatBytes(d.size_bytes)}</TableCell>
+                  <TableCell className="text-slate-500 dark:text-slate-400">
+                    {new Date(d.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-1">
                       <button
-                        onClick={() => setSelectedId(d.id)}
-                        className="font-medium text-slate-900 dark:text-slate-100 hover:text-brand hover:underline"
+                        onClick={() => handleDownload(d.id, d.filename)}
+                        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-brand-600 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-brand-400"
+                        title="Download"
                       >
-                        {d.filename}
+                        <Download className="h-4 w-4" />
                       </button>
-                    </td>
-                    <td className="px-5 py-3">
-                      {d.document_type ? (
-                        <span
-                          className={cn(
-                            "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                            docTypeStyles[d.document_type],
-                          )}
-                        >
-                          {labelize(d.document_type)}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span
-                        className={cn(
-                          "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                          statusStyles[d.processing_status],
-                        )}
+                      <button
+                        onClick={() => handleDelete(d.id)}
+                        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 dark:text-slate-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                        title="Delete"
                       >
-                        {d.processing_status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-slate-500 dark:text-slate-400">{formatBytes(d.size_bytes)}</td>
-                    <td className="px-5 py-3 text-slate-500 dark:text-slate-400">
-                      {new Date(d.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-5 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleDownload(d.id, d.filename)}
-                          className="text-slate-400 dark:text-slate-500 hover:text-brand"
-                          title="Download"
-                        >
-                          <Download className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(d.id)}
-                          className="text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400"
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </Card>
 
       <UploadDialog

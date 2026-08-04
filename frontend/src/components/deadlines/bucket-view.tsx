@@ -3,7 +3,7 @@
 import { AlertTriangle, CalendarClock, CheckCircle2, Clock } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   formatDeadlineDate,
   priorityVariant,
@@ -29,7 +29,7 @@ export function DeadlineRow({
               "shrink-0 rounded-full border p-0.5 transition-colors",
               deadline.completed
                 ? "border-emerald-500 text-emerald-500 dark:text-emerald-400"
-                : "border-slate-300 dark:border-slate-600 text-transparent hover:border-brand",
+                : "border-slate-300 text-transparent hover:border-brand-500 dark:border-slate-600",
             )}
             title={deadline.completed ? "Mark incomplete" : "Mark complete"}
           >
@@ -40,7 +40,7 @@ export function DeadlineRow({
           <p
             className={cn(
               "truncate text-sm font-medium",
-              deadline.completed ? "text-slate-400 dark:text-slate-500 line-through" : "text-slate-900 dark:text-slate-100",
+              deadline.completed ? "text-slate-400 line-through dark:text-slate-500" : "text-slate-900 dark:text-slate-100",
             )}
           >
             {deadline.title}
@@ -73,11 +73,11 @@ function BucketCard({
   onToggleComplete: (d: Deadline) => void;
 }) {
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <Icon className={cn("h-4 w-4", accent)} />
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
+          <CardTitle>{title}</CardTitle>
         </div>
         <span className="text-sm font-medium text-slate-400 dark:text-slate-500">{deadlines.length}</span>
       </CardHeader>
@@ -85,13 +85,11 @@ function BucketCard({
         {deadlines.length === 0 ? (
           <p className="px-5 pb-4 text-sm text-slate-400 dark:text-slate-500">Nothing here.</p>
         ) : (
-          <ul className="divide-y divide-slate-50 dark:divide-slate-900">
+          <div className="divide-y divide-slate-50 dark:divide-slate-800/60">
             {deadlines.map((d) => (
-              <li key={d.id}>
-                <DeadlineRow deadline={d} onToggleComplete={onToggleComplete} />
-              </li>
+              <DeadlineRow key={d.id} deadline={d} onToggleComplete={onToggleComplete} />
             ))}
-          </ul>
+          </div>
         )}
       </CardContent>
     </Card>
@@ -112,7 +110,7 @@ export function DeadlineBucketsView({
   return (
     <div className="space-y-4">
       {overdue.length > 0 && (
-        <div className="flex items-center gap-2 rounded-md bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+        <div className="flex items-center gap-2 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
           <AlertTriangle className="h-4 w-4" />
           You have {overdue.length} overdue deadline{overdue.length === 1 ? "" : "s"} needing attention.
         </div>
@@ -121,7 +119,7 @@ export function DeadlineBucketsView({
         <BucketCard
           title="Overdue"
           icon={AlertTriangle}
-          accent="text-red-600 dark:text-red-400"
+          accent="text-rose-600 dark:text-rose-400"
           deadlines={overdue}
           onToggleComplete={onToggleComplete}
         />
@@ -135,7 +133,7 @@ export function DeadlineBucketsView({
         <BucketCard
           title="Upcoming"
           icon={CalendarClock}
-          accent="text-brand"
+          accent="text-brand-600 dark:text-brand-400"
           deadlines={upcoming}
           onToggleComplete={onToggleComplete}
         />

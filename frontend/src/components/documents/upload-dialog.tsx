@@ -1,11 +1,22 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Upload, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { FileCheck2, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input, Label } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { api, ApiError } from "@/lib/api";
 import { formatBytes } from "@/components/documents/helpers";
+import { cn } from "@/lib/utils";
 
 const ACCEPTED = ".pdf,.docx,.png,.jpg,.jpeg";
 
@@ -22,9 +33,28 @@ export function UploadDialog({
   const [file, setFile] = useState<File | null>(null);
   const [caseId, setCaseId] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!open) return null;
+  // Simulated progress: the upload API has no byte-level progress events, so
+  // this animates toward (but never reaches) completion while the request is in flight.
+  useEffect(() => {
+    if (!uploading) {
+      setProgress(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setProgress((p) => (p >= 90 ? p : p + (90 - p) * 0.15));
+    }, 150);
+    return () => clearInterval(interval);
+  }, [uploading]);
+
+  function reset() {
+    setFile(null);
+    setCaseId("");
+    setError(null);
+  }
 
   async function handleUpload() {
     if (!file) return;
@@ -32,8 +62,9 @@ export function UploadDialog({
     setUploading(true);
     try {
       await api.uploadDocument(file, caseId ? { case_id: Number(caseId) } : undefined);
-      setFile(null);
-      setCaseId("");
+      setProgress(100);
+      await new Promise((r) => setTimeout(r, 250));
+      reset();
       onUploaded();
       onClose();
     } catch (err) {
@@ -43,36 +74,62 @@ export function UploadDialog({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white dark:bg-slate-900 shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Upload Document</h2>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragActive(false);
+    const dropped = e.dataTransfer.files?.[0];
+    if (dropped) setFile(dropped);
+  }
 
-        <div className="space-y-4 px-5 py-5">
+  return (
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+      <DialogContent
+        size="md"
+        onCloseAutoFocus={() => reset()}
+      >
+        <DialogHeader>
+          <DialogTitle>Upload Document</DialogTitle>
+          <DialogDescription>PDF, DOCX, PNG, or JPG — AI will extract key facts automatically.</DialogDescription>
+        </DialogHeader>
+
+        <DialogBody className="space-y-4">
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
+            <div className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+              {error}
+            </div>
           )}
 
           <div
             onClick={() => inputRef.current?.click()}
-            className="flex cursor-pointer flex-col items-center gap-2 rounded-md border-2 border-dashed border-slate-300 dark:border-slate-600 px-4 py-8 text-center hover:border-brand"
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragActive(true);
+            }}
+            onDragLeave={() => setDragActive(false)}
+            onDrop={handleDrop}
+            className={cn(
+              "flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors",
+              dragActive
+                ? "border-brand-500 bg-brand-50 dark:bg-brand-500/10"
+                : "border-slate-200 hover:border-brand-300 dark:border-slate-700 dark:hover:border-brand-500/40",
+            )}
           >
-            <Upload className="h-6 w-6 text-slate-400 dark:text-slate-500" />
             {file ? (
-              <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{file.name}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{formatBytes(file.size)}</p>
-              </div>
+              <>
+                <FileCheck2 className="h-6 w-6 text-brand-600 dark:text-brand-400" />
+                <div>
+                  <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{file.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{formatBytes(file.size)}</p>
+                </div>
+              </>
             ) : (
-              <div>
-                <p className="text-sm text-slate-600 dark:text-slate-400">Click to choose a file</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500">PDF, DOCX, PNG, or JPG</p>
-              </div>
+              <>
+                <Upload className="h-6 w-6 text-slate-400 dark:text-slate-500" />
+                <div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">Drag & drop, or click to choose a file</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">PDF, DOCX, PNG, or JPG</p>
+                </div>
+              </>
             )}
             <input
               ref={inputRef}
@@ -83,28 +140,35 @@ export function UploadDialog({
             />
           </div>
 
+          {uploading && (
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+              <div
+                className="h-full rounded-full bg-brand-600 transition-[width] duration-150 ease-out dark:bg-brand-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          )}
+
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
-              Case ID (optional)
-            </label>
-            <input
+            <Label htmlFor="upload-case-id">Case ID (optional)</Label>
+            <Input
+              id="upload-case-id"
               value={caseId}
               onChange={(e) => setCaseId(e.target.value.replace(/\D/g, ""))}
               placeholder="Link to a case to auto-update its summary"
-              className="w-full rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
             />
           </div>
-        </div>
+        </DialogBody>
 
-        <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-4">
+        <DialogFooter>
           <Button variant="secondary" onClick={onClose} disabled={uploading}>
             Cancel
           </Button>
-          <Button onClick={handleUpload} disabled={!file || uploading}>
-            {uploading ? "Uploading..." : "Upload"}
+          <Button onClick={handleUpload} loading={uploading} disabled={!file}>
+            Upload
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

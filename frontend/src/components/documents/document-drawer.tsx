@@ -1,19 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, X } from "lucide-react";
+import { Download } from "lucide-react";
 
 import { api, ApiError } from "@/lib/api";
 import { downloadBlob } from "@/lib/download-file";
 import type { DocumentDetail } from "@/types";
-import { docTypeStyles, formatBytes, labelize, statusStyles } from "@/components/documents/helpers";
-import { cn } from "@/lib/utils";
+import { docTypeVariant, formatBytes, labelize, statusVariant } from "@/components/documents/helpers";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetBody } from "@/components/ui/sheet";
+import { SkeletonText } from "@/components/ui/skeleton";
 
 function FactList({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <div>
-      <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">{title}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{title}</p>
       <ul className="mt-1 list-inside list-disc space-y-0.5 text-sm text-slate-700 dark:text-slate-300">
         {items.map((item, i) => (
           <li key={i}>{item}</li>
@@ -83,56 +85,37 @@ export function DocumentDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
-      <div className="flex h-full w-full max-w-lg flex-col bg-white dark:bg-slate-900 shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4">
-          <h2 className="truncate text-base font-semibold text-slate-900 dark:text-slate-100">
-            {doc?.filename ?? "Document"}
-          </h2>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-400">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+    <Sheet open onOpenChange={(next) => !next && onClose()}>
+      <SheetContent size="lg">
+        <SheetHeader>
+          <SheetTitle className="truncate pr-8">{doc?.filename ?? "Document"}</SheetTitle>
+        </SheetHeader>
 
-        <div className="flex-1 space-y-5 overflow-y-auto px-5 py-5">
+        <SheetBody className="space-y-5">
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">{error}</div>
+            <div className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
+              {error}
+            </div>
           )}
 
-          {doc && (
+          {!doc && !error ? (
+            <SkeletonText lines={5} />
+          ) : doc ? (
             <>
               <div className="flex flex-wrap items-center gap-2">
                 {doc.document_type && (
-                  <span
-                    className={cn(
-                      "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                      docTypeStyles[doc.document_type],
-                    )}
-                  >
-                    {labelize(doc.document_type)}
-                  </span>
+                  <Badge variant={docTypeVariant[doc.document_type]}>{labelize(doc.document_type)}</Badge>
                 )}
-                <span
-                  className={cn(
-                    "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                    statusStyles[doc.processing_status],
-                  )}
-                >
-                  {doc.processing_status}
-                </span>
+                <Badge variant={statusVariant[doc.processing_status]}>{doc.processing_status}</Badge>
                 <span className="text-xs text-slate-400 dark:text-slate-500">{formatBytes(doc.size_bytes)}</span>
               </div>
 
               {/* Preview */}
-              <div className="overflow-hidden rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
+              <div className="overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-100 dark:bg-slate-800/50 dark:ring-slate-800">
                 {isImage ? (
                   previewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={previewUrl}
-                      alt={doc.filename}
-                      className="max-h-64 w-full object-contain"
-                    />
+                    <img src={previewUrl} alt={doc.filename} className="max-h-64 w-full object-contain" />
                   ) : (
                     <div className="flex h-32 items-center justify-center text-sm text-slate-400 dark:text-slate-500">
                       Loading preview...
@@ -147,21 +130,21 @@ export function DocumentDrawer({
 
               <button
                 onClick={handleDownload}
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline dark:text-brand-400"
               >
                 <Download className="h-4 w-4" />
                 Download
               </button>
 
               {doc.processing_status === "failed" && doc.processing_error && (
-                <div className="rounded-md bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-400">
+                <div className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20">
                   Processing failed: {doc.processing_error}
                 </div>
               )}
 
               {doc.summary && (
                 <div>
-                  <p className="text-xs font-semibold uppercase text-slate-400 dark:text-slate-500">Summary</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Summary</p>
                   <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">{doc.summary}</p>
                 </div>
               )}
@@ -172,9 +155,9 @@ export function DocumentDrawer({
               <FactList title="Organizations" items={doc.organizations} />
               <FactList title="Missing Documents" items={doc.missing_documents} />
             </>
-          )}
-        </div>
-      </div>
-    </div>
+          ) : null}
+        </SheetBody>
+      </SheetContent>
+    </Sheet>
   );
 }
