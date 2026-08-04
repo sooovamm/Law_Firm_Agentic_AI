@@ -6,6 +6,8 @@ the registry. This keeps prompts external and nodes testable.
 """
 from __future__ import annotations
 
+import json
+
 from app.ai.base import ChatMessage, LLMClient
 from app.conversations.ai_schemas import (
     InformationAssessment,
@@ -16,6 +18,7 @@ from app.conversations.ai_schemas import (
 from app.conversations.enums import IntakePracticeArea, IntakeStage
 from app.core.config import settings
 from app.core.logging import get_logger
+from app.lawyers.ai_schemas import LawyerMatchResult
 from app.prompts.registry import load_prompt, render_prompt
 from app.prompts.required_fields import required_fields_for
 
@@ -115,6 +118,64 @@ def lead_qualification_node(state: dict, llm: LLMClient) -> dict:
         "recommended": result.recommended,
         "qualification_reasoning": result.reasoning,
         "missing_information": result.missing_information,
+        "next_stage": IntakeStage.LAWYER_MATCHING,
+    }
+
+
+def lawyer_matching_node(state: dict, llm: LLMClient) -> dict:
+    """Recommend a lawyer from the pre-fetched, already-eligible candidate list.
+
+    The candidate list is fetched by the service before the graph runs (nodes stay
+    DB-free), and is already hard-filtered to lawyers accepting new clients, under
+    capacity, and in a compatible practice area. If it's empty, no lawyer
+    qualifies and we skip the LLM call entirely.
+    """
+    candidates: list[dict] = state.get("candidate_lawyers") or []
+
+    if not candidates:
+        area = state.get("practice_area")
+        area_label = area.value if isinstance(area, IntakePracticeArea) else "this"
+        return {
+            "recommended_lawyer_id": None,
+            "match_score": 0,
+            "match_reasoning": [f"No lawyer currently handles {area_label} cases."],
+            "alternative_lawyer_ids": [],
+            "next_stage": IntakeStage.GENERATE_SUMMARY,
+        }
+
+    area = state.get("practice_area")
+    case_context = "\n".join(
+        [
+            f"Practice area: {area.value if area else 'unknown'}",
+            f"Urgency: {state.get('urgency').value if state.get('urgency') else 'unknown'}",
+            f"Qualification reasoning: {state.get('qualification_reasoning', '')}",
+            f"Collected facts: {'; '.join(state.get('collected', []))}",
+        ]
+    )
+    prompt = render_prompt(
+        "lawyer_matching",
+        case_context=case_context,
+        candidates_json=json.dumps(candidates, default=str),
+    )
+    result: LawyerMatchResult = llm.structured([_system(prompt)], LawyerMatchResult)
+
+    eligible_ids = {c["id"] for c in candidates}
+    recommended_id = (
+        result.recommended_lawyer_id if result.recommended_lawyer_id in eligible_ids else None
+    )
+    alternatives = [lid for lid in result.alternative_lawyer_ids if lid in eligible_ids]
+
+    logger.info(
+        "conv=%s lawyer_match recommended=%s score=%s",
+        state.get("conversation_id"),
+        recommended_id,
+        result.match_score,
+    )
+    return {
+        "recommended_lawyer_id": recommended_id,
+        "match_score": result.match_score,
+        "match_reasoning": result.reasoning,
+        "alternative_lawyer_ids": alternatives,
         "next_stage": IntakeStage.GENERATE_SUMMARY,
     }
 

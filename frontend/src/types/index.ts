@@ -129,6 +129,8 @@ export interface ChatMessageResponse {
   structured: IntakeStructuredResult;
   case_id: number | null;
   summary: AISummary | null;
+  // Sprint 8: present once the AI has matched a lawyer to this intake.
+  lawyer_match?: LawyerMatchRecommendation | null;
 }
 
 export interface ConversationSummaryItem {
@@ -440,4 +442,151 @@ export interface DeadlineBuckets {
   overdue: Deadline[];
   today: Deadline[];
   upcoming: Deadline[];
+}
+
+// ---- Sprint 8: Lawyer Onboarding & AI Matching ----
+
+export type LawyerPracticeArea =
+  | "criminal"
+  | "family"
+  | "divorce"
+  | "civil_litigation"
+  | "corporate"
+  | "employment"
+  | "immigration"
+  | "property"
+  | "tax"
+  | "intellectual_property"
+  | "consumer"
+  | "cyber"
+  | "contract"
+  | "real_estate"
+  | "bankruptcy"
+  | "environmental"
+  | "other";
+
+export const LAWYER_PRACTICE_AREAS: LawyerPracticeArea[] = [
+  "criminal",
+  "family",
+  "divorce",
+  "civil_litigation",
+  "corporate",
+  "employment",
+  "immigration",
+  "property",
+  "tax",
+  "intellectual_property",
+  "consumer",
+  "cyber",
+  "contract",
+  "real_estate",
+  "bankruptcy",
+  "environmental",
+  "other",
+];
+
+export type CaseComplexity = "simple" | "moderate" | "complex" | "highly_complex";
+export type ClientType = "individual" | "business" | "both";
+
+export interface LawyerProfile {
+  id: number;
+  user_id: number;
+
+  years_of_experience: number | null;
+  biography: string | null;
+  languages_spoken: string[];
+
+  primary_practice_area: LawyerPracticeArea | null;
+  secondary_practice_areas: LawyerPracticeArea[];
+  jurisdictions: string[];
+  bar_registration_number: string | null;
+  law_firm_name: string | null;
+  highest_qualification: string | null;
+  current_position: string | null;
+
+  total_cases_handled: number;
+  total_cases_won: number;
+  total_cases_lost: number;
+  active_cases: number;
+  settlement_cases: number;
+  appeal_cases: number;
+  average_case_duration_days: number | null;
+  largest_case_value: number | null;
+  notable_achievements: string | null;
+
+  minimum_case_value: number | null;
+  maximum_case_value: number | null;
+  preferred_case_complexity: CaseComplexity | null;
+  preferred_client_type: ClientType | null;
+
+  weekly_capacity: number;
+  current_workload: number;
+  preferred_consultation_days: string[];
+  preferred_consultation_hours_start: string | null;
+  preferred_consultation_hours_end: string | null;
+  accepts_new_clients: boolean;
+
+  expertise_score: number | null;
+  confidence_score: number | null;
+  onboarding_completed: boolean;
+
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LawyerProfileAdmin extends LawyerProfile {
+  user: User;
+}
+
+export interface LawyerOnboardingStatus {
+  has_profile: boolean;
+  onboarding_completed: boolean;
+}
+
+/** Partial payload: every field optional, used for both autosave and final submit. */
+export type LawyerProfileInput = Partial<{
+  years_of_experience: number;
+  biography: string;
+  languages_spoken: string[];
+  primary_practice_area: LawyerPracticeArea;
+  secondary_practice_areas: LawyerPracticeArea[];
+  jurisdictions: string[];
+  bar_registration_number: string;
+  law_firm_name: string;
+  highest_qualification: string;
+  current_position: string;
+  total_cases_handled: number;
+  total_cases_won: number;
+  total_cases_lost: number;
+  active_cases: number;
+  settlement_cases: number;
+  appeal_cases: number;
+  average_case_duration_days: number;
+  largest_case_value: number;
+  notable_achievements: string;
+  minimum_case_value: number;
+  maximum_case_value: number;
+  preferred_case_complexity: CaseComplexity;
+  preferred_client_type: ClientType;
+  weekly_capacity: number;
+  preferred_consultation_days: string[];
+  preferred_consultation_hours_start: string;
+  preferred_consultation_hours_end: string;
+  accepts_new_clients: boolean;
+}>;
+
+export interface LawyerMatchRecommendation {
+  recommended_lawyer_id: number | null;
+  match_score: number;
+  reasoning: string[];
+  alternative_lawyer_ids: number[];
+}
+
+export interface LawyerMatchHistoryItem extends LawyerMatchRecommendation {
+  id: number;
+  conversation_id: number;
+  case_id: number | null;
+  was_overridden: boolean;
+  overridden_lawyer_id: number | null;
+  created_at: string;
 }

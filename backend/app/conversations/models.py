@@ -52,18 +52,18 @@ class Conversation(Base, TimestampMixin):
         index=True,
     )
 
-    messages: Mapped[list["Message"]] = relationship(
+    messages: Mapped[list[Message]] = relationship(
         back_populates="conversation",
         cascade="all, delete-orphan",
         order_by="Message.id",
     )
-    summary: Mapped["AISummary | None"] = relationship(
+    summary: Mapped[AISummary | None] = relationship(
         back_populates="conversation",
         cascade="all, delete-orphan",
         uselist=False,
     )
-    created_by: Mapped["User | None"] = relationship()
-    case: Mapped["Case | None"] = relationship()
+    created_by: Mapped[User | None] = relationship()
+    case: Mapped[Case | None] = relationship()
 
     def __repr__(self) -> str:
         return f"<Conversation id={self.id} stage={self.stage} status={self.status}>"
@@ -84,7 +84,7 @@ class Message(Base, TimestampMixin):
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
 
-    conversation: Mapped["Conversation"] = relationship(back_populates="messages")
+    conversation: Mapped[Conversation] = relationship(back_populates="messages")
 
     def __repr__(self) -> str:
         return f"<Message id={self.id} role={self.role} conv={self.conversation_id}>"
@@ -116,7 +116,7 @@ class AISummary(Base, TimestampMixin):
     missing_information: Mapped[str | None] = mapped_column(Text, nullable=True)
     message_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
-    conversation: Mapped["Conversation"] = relationship(back_populates="summary")
+    conversation: Mapped[Conversation] = relationship(back_populates="summary")
 
     def __repr__(self) -> str:
         return f"<AISummary id={self.id} conv={self.conversation_id}>"

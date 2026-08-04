@@ -28,6 +28,14 @@ class IntakeState(TypedDict, total=False):
     recommended: bool
     qualification_reasoning: str
 
+    # Pre-fetched by the service (nodes stay DB-free); eligible candidates for
+    # the conversation's detected practice area.
+    candidate_lawyers: list[dict]
+    recommended_lawyer_id: int | None
+    match_score: int
+    match_reasoning: list[str]
+    alternative_lawyer_ids: list[int]
+
     summary_title: str
     summary_text: str
     summary_key_facts: list[str]

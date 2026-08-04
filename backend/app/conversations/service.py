@@ -29,14 +29,17 @@ from app.conversations.repository import ConversationRepository
 from app.conversations.schemas import (
     ChatMessageResponse,
     IntakeStructuredResult,
+    LawyerMatchRead,
 )
 from app.core.exceptions import NotFoundError, ValidationError
 from app.core.logging import get_logger
-from app.models.enums import CaseStatus
-from app.repositories.case_repository import CaseRepository
-from app.repositories.client_repository import ClientRepository
+from app.lawyers.enums import to_lawyer_practice_area
+from app.lawyers.model import LawyerMatchRecommendation
+from app.lawyers.repository import LawyerProfileRepository
+from app.lawyers.serializers import join_int_list, join_list, split_list
 from app.models.case import Case
 from app.models.client import Client
+from app.models.enums import CaseStatus
 
 logger = get_logger(__name__)
 
@@ -88,6 +91,8 @@ class IntakeService:
             "user_message": user_message,
             "practice_area": conv.practice_area,
         }
+        if conv.practice_area is not None:
+            state["candidate_lawyers"] = self._candidate_lawyers(conv.practice_area)
         result = self.graph.invoke(state)
 
         # Persist practice area if the graph detected it.
@@ -144,6 +149,7 @@ class IntakeService:
         if result.get("should_create_case"):
             case = self._create_case_from_intake(conv, result)
             conv.case_id = case.id
+            self._record_lawyer_match(conv, case, result)
 
         conv.status = ConversationStatus.COMPLETED
         conv.stage = IntakeStage.FINISHED
@@ -164,12 +170,54 @@ class IntakeService:
             status=CaseStatus.OPEN,
             description=result.get("summary_text"),
             client_id=client.id,
-            assigned_lawyer_id=conv.created_by_id,
+            assigned_lawyer_id=result.get("recommended_lawyer_id"),
         )
         self.db.add(case)
         self.db.flush()
         self.db.refresh(case)
         return case
+
+    def _candidate_lawyers(self, area) -> list[dict]:
+        """Eligible-candidate summaries for the AI matching node (DB-free node)."""
+        lawyer_area = to_lawyer_practice_area(area)
+        candidates = LawyerProfileRepository(self.db).find_eligible(lawyer_area)
+        return [
+            {
+                "id": c.user_id,
+                "full_name": c.user.full_name if c.user else None,
+                "years_of_experience": c.years_of_experience,
+                "current_workload": c.current_workload,
+                "weekly_capacity": c.weekly_capacity,
+                "jurisdictions": split_list(c.jurisdictions),
+                "languages_spoken": split_list(c.languages_spoken),
+                "total_cases_won": c.total_cases_won,
+                "total_cases_lost": c.total_cases_lost,
+                "preferred_case_complexity": (
+                    c.preferred_case_complexity.value if c.preferred_case_complexity else None
+                ),
+            }
+            for c in candidates
+        ]
+
+    def _record_lawyer_match(self, conv: Conversation, case: Case, result: dict) -> None:
+        """Persist the AI matching event and refresh the assigned lawyer's workload."""
+        recommended_id = result.get("recommended_lawyer_id")
+        match = LawyerMatchRecommendation(
+            conversation_id=conv.id,
+            case_id=case.id,
+            recommended_lawyer_id=recommended_id,
+            match_score=result.get("match_score", 0),
+            reasoning=join_list(result.get("match_reasoning") or []),
+            alternative_lawyer_ids=join_int_list(result.get("alternative_lawyer_ids") or []),
+        )
+        self.db.add(match)
+        self.db.flush()
+
+        if recommended_id is not None:
+            lawyer_repo = LawyerProfileRepository(self.db)
+            profile = lawyer_repo.get_by_user_id(recommended_id)
+            if profile is not None:
+                profile.current_workload = lawyer_repo.count_active_cases(recommended_id)
 
     def _structured_result(
         self, conv: Conversation, result: dict | None
@@ -212,6 +260,16 @@ class IntakeService:
                 created_at=summary_obj.created_at,
             )
 
+        lawyer_match = None
+        result = result or {}
+        if "match_score" in result:
+            lawyer_match = LawyerMatchRead(
+                recommended_lawyer_id=result.get("recommended_lawyer_id"),
+                match_score=result.get("match_score", 0),
+                reasoning=result.get("match_reasoning", []) or [],
+                alternative_lawyer_ids=result.get("alternative_lawyer_ids", []) or [],
+            )
+
         return ChatMessageResponse(
             conversation_id=conv.id,
             stage=conv.stage,
@@ -221,4 +279,5 @@ class IntakeService:
             structured=self._structured_result(conv, result),
             case_id=conv.case_id,
             summary=summary_read,
+            lawyer_match=lawyer_match,
         )

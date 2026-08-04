@@ -53,11 +53,14 @@ class CaseService:
         )
         self.db.commit()
         logger.info("Created case id=%s status=%s", case.id, case.status.value)
+        if case.assigned_lawyer_id is not None:
+            self._recompute_workload(case.assigned_lawyer_id)
         return self.get(case.id)
 
     def update(self, case_id: int, data: CaseUpdate) -> Case:
         case = self.get(case_id)
         payload = data.model_dump(exclude_unset=True)
+        previous_lawyer_id = case.assigned_lawyer_id
 
         if "client_id" in payload and payload["client_id"] is not None:
             self._validate_client(payload["client_id"])
@@ -69,7 +72,21 @@ class CaseService:
 
         self.db.commit()
         logger.info("Updated case id=%s", case.id)
+
+        new_lawyer_id = case.assigned_lawyer_id
+        if new_lawyer_id != previous_lawyer_id or "status" in payload:
+            if previous_lawyer_id is not None:
+                self._recompute_workload(previous_lawyer_id)
+            if new_lawyer_id is not None:
+                self._recompute_workload(new_lawyer_id)
         return self.get(case.id)
+
+    def _recompute_workload(self, lawyer_id: int) -> None:
+        # Local import: app.lawyers.service depends on this module for match
+        # overrides, so importing at module level would create a cycle.
+        from app.lawyers.service import LawyerProfileService
+
+        LawyerProfileService(self.db).recompute_workload(lawyer_id)
 
     def delete(self, case_id: int) -> None:
         case = self.get(case_id)

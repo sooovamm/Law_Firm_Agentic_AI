@@ -26,6 +26,7 @@ from app.conversations.enums import IntakePracticeArea, Urgency
 from app.core.mailer import get_mailer
 from app.database.base import Base
 from app.database.session import get_db
+from app.lawyers.ai_schemas import LawyerMatchResult
 from app.main import app
 from tests._auth_helpers import FakeMailer, register_via_otp
 
@@ -194,3 +195,108 @@ def test_conversation_isolated_between_users(client):
 def test_chat_requires_auth(client):
     r = client.post("/api/v1/chat/message", json={"message": "hi"})
     assert r.status_code == 401
+
+
+class FakeLLMWithMatching(FakeLLM):
+    """Extends the scripted client with a lawyer-matching branch."""
+
+    def __init__(self, recommended_lawyer_id: int) -> None:
+        super().__init__()
+        self.recommended_lawyer_id = recommended_lawyer_id
+
+    def structured(self, messages: list[ChatMessage], schema):
+        if schema is LawyerMatchResult:
+            return LawyerMatchResult(
+                recommended_lawyer_id=self.recommended_lawyer_id,
+                match_score=91,
+                reasoning=[
+                    "Specializes in Employment Law",
+                    "8 years experience",
+                    "Currently available",
+                ],
+                alternative_lawyer_ids=[],
+            )
+        return super().structured(messages, schema)
+
+
+def test_intake_recommends_and_assigns_eligible_lawyer(client):
+    # Onboard a lawyer eligible for employment cases (the practice area the
+    # scripted FakeLLM always detects).
+    mailer = app.dependency_overrides[get_mailer]()
+    lawyer_data = register_via_otp(
+        client, mailer, "lawyer@x.com", role="lawyer", full_name="Lena Lawyer"
+    )
+    lawyer_id = lawyer_data["user"]["id"]
+    lawyer_h = {"Authorization": f"Bearer {lawyer_data['tokens']['access_token']}"}
+
+    complete = client.post(
+        "/api/v1/lawyers/me/complete",
+        headers=lawyer_h,
+        json={
+            "years_of_experience": 8,
+            "languages_spoken": ["English"],
+            "primary_practice_area": "employment",
+            "bar_registration_number": "BAR-001",
+        },
+    )
+    assert complete.status_code == 200, complete.text
+
+    app.dependency_overrides[get_llm] = lambda: FakeLLMWithMatching(lawyer_id)
+
+    h = _admin_header(client)
+    r = client.post("/api/v1/chat/message", headers=h, json={"message": "I was wrongfully fired."})
+    conv_id = r.json()["conversation_id"]
+
+    last = None
+    followups = [
+        "Acme Corp, I was a technician.",
+        "It happened last week.",
+        "Yes, I reported a safety issue.",
+    ]
+    for msg in followups:
+        last = client.post(
+            "/api/v1/chat/message",
+            headers=h,
+            json={"conversation_id": conv_id, "message": msg},
+        ).json()
+
+    assert last["case_id"] is not None
+    assert last["lawyer_match"]["recommended_lawyer_id"] == lawyer_id
+    assert last["lawyer_match"]["match_score"] == 91
+
+    case = client.get(f"/api/v1/cases/{last['case_id']}", headers=h).json()
+    assert case["assigned_lawyer_id"] == lawyer_id
+
+    # The lawyer's workload should reflect the newly assigned case.
+    profile = client.get("/api/v1/lawyers/me", headers=lawyer_h).json()
+    assert profile["current_workload"] == 1
+
+    # AI match history is visible to the recommended lawyer.
+    history = client.get(f"/api/v1/lawyers/{lawyer_id}/match-history", headers=lawyer_h).json()
+    assert len(history) == 1
+    match_id = history[0]["id"]
+
+    # A different, uninvolved lawyer cannot override the assignment.
+    other_data = register_via_otp(
+        client, mailer, "other@x.com", role="lawyer", full_name="Other Lawyer"
+    )
+    other_id = other_data["user"]["id"]
+    other_h = {"Authorization": f"Bearer {other_data['tokens']['access_token']}"}
+    forbidden = client.patch(
+        f"/api/v1/lawyers/match/{match_id}/override",
+        headers=other_h,
+        json={"lawyer_id": other_id},
+    )
+    assert forbidden.status_code == 403
+
+    # An admin can override the AI's recommendation.
+    override = client.patch(
+        f"/api/v1/lawyers/match/{match_id}/override",
+        headers=h,
+        json={"lawyer_id": other_id},
+    )
+    assert override.status_code == 200, override.text
+    assert override.json()["was_overridden"] is True
+
+    case_after = client.get(f"/api/v1/cases/{last['case_id']}", headers=h).json()
+    assert case_after["assigned_lawyer_id"] == other_id

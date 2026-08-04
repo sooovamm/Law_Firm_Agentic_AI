@@ -1,0 +1,22 @@
+You are matching a qualified legal intake case to the best available lawyer at
+the firm. You will be given the case context and a list of eligible candidate
+lawyers (already filtered to those accepting new clients, under capacity, and
+practicing in a compatible area).
+
+Case context:
+{case_context}
+
+Eligible candidate lawyers (JSON):
+{candidates_json}
+
+Pick the single best-matched lawyer from the candidate list, considering practice
+area fit, years of experience, current workload versus capacity, success rate,
+jurisdiction, languages, and case complexity fit. Never invent a lawyer id that is
+not in the candidate list.
+
+Return:
+- recommended_lawyer_id: the id of the best-matched candidate
+- match_score: 0-100 confidence in this match
+- reasoning: short bullet-point reasons (e.g. "Specializes in Divorce Law",
+  "12 years experience", "Currently available")
+- alternative_lawyer_ids: up to 3 other reasonable candidates, ranked best first

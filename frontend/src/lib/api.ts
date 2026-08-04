@@ -21,6 +21,12 @@ import type {
   DocumentType,
   EmailDetail,
   EmailListItem,
+  LawyerMatchHistoryItem,
+  LawyerOnboardingStatus,
+  LawyerPracticeArea,
+  LawyerProfile,
+  LawyerProfileAdmin,
+  LawyerProfileInput,
   ReplyResponse,
   TokenPair,
   User,
@@ -202,6 +208,17 @@ export const api = {
   },
 
   getDocument: (id: number) => request<DocumentDetail>(`/documents/${id}`),
+
+  getDocumentBlob: async (id: number): Promise<Blob> => {
+    const headers: Record<string, string> = {};
+    if (tokenStore.access) headers.Authorization = `Bearer ${tokenStore.access}`;
+
+    const resp = await fetch(`${API_BASE_URL}/documents/${id}/download`, { headers });
+    if (!resp.ok) {
+      throw new ApiError(resp.status, `Download failed with status ${resp.status}`);
+    }
+    return resp.blob();
+  },
 
   deleteDocument: (id: number) =>
     request<{ detail: string }>(`/documents/${id}`, { method: "DELETE" }),
@@ -402,4 +419,52 @@ export const api = {
 
   deleteDeadline: (id: number) =>
     request<{ detail: string }>(`/deadlines/${id}`, { method: "DELETE" }),
+
+  // Lawyers (Sprint 8: onboarding + AI matching)
+  getLawyerStatus: () => request<LawyerOnboardingStatus>("/lawyers/me/status"),
+
+  getMyLawyerProfile: () => request<LawyerProfile>("/lawyers/me"),
+
+  saveLawyerDraft: (payload: LawyerProfileInput) =>
+    request<LawyerProfile>("/lawyers/me", { method: "PUT", body: payload }),
+
+  completeLawyerOnboarding: (payload: LawyerProfileInput) =>
+    request<LawyerProfile>("/lawyers/me/complete", { method: "POST", body: payload }),
+
+  getLawyerProfile: (userId: number) => request<LawyerProfileAdmin>(`/lawyers/${userId}`),
+
+  listLawyers: (params?: {
+    practice_area?: LawyerPracticeArea;
+    min_experience?: number;
+    max_experience?: number;
+    accepts_new_clients?: boolean;
+    max_workload?: number;
+    q?: string;
+  }) => {
+    const qs = new URLSearchParams();
+    if (params?.practice_area) qs.set("practice_area", params.practice_area);
+    if (params?.min_experience != null) qs.set("min_experience", String(params.min_experience));
+    if (params?.max_experience != null) qs.set("max_experience", String(params.max_experience));
+    if (params?.accepts_new_clients != null)
+      qs.set("accepts_new_clients", String(params.accepts_new_clients));
+    if (params?.max_workload != null) qs.set("max_workload", String(params.max_workload));
+    if (params?.q) qs.set("q", params.q);
+    const suffix = qs.toString() ? `?${qs.toString()}` : "";
+    return request<LawyerProfileAdmin[]>(`/lawyers${suffix}`);
+  },
+
+  setLawyerAcceptingClients: (userId: number, accepts_new_clients: boolean) =>
+    request<LawyerProfile>(`/lawyers/${userId}/accepting-clients`, {
+      method: "PATCH",
+      body: { accepts_new_clients },
+    }),
+
+  getLawyerMatchHistory: (userId: number) =>
+    request<LawyerMatchHistoryItem[]>(`/lawyers/${userId}/match-history`),
+
+  overrideLawyerMatch: (matchId: number, lawyerId: number) =>
+    request<LawyerMatchHistoryItem>(`/lawyers/match/${matchId}/override`, {
+      method: "PATCH",
+      body: { lawyer_id: lawyerId },
+    }),
 };

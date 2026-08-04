@@ -11,6 +11,7 @@ from app.api.v1 import (
     documents,
     emails,
     intake,
+    lawyers,
     users,
 )
 
@@ -25,3 +26,4 @@ api_router.include_router(documents.router)
 api_router.include_router(consultations.router)
 api_router.include_router(emails.router)
 api_router.include_router(deadlines.router)
+api_router.include_router(lawyers.router)

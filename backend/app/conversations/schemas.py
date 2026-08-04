@@ -54,6 +54,15 @@ class ChatMessageRequest(BaseModel):
     message: str = Field(min_length=1, max_length=4000)
 
 
+class LawyerMatchRead(BaseModel):
+    """Mirrors the AI lawyer-matching JSON contract."""
+
+    recommended_lawyer_id: int | None
+    match_score: int
+    reasoning: list[str] = Field(default_factory=list)
+    alternative_lawyer_ids: list[int] = Field(default_factory=list)
+
+
 class ChatMessageResponse(BaseModel):
     conversation_id: int
     stage: IntakeStage
@@ -63,6 +72,7 @@ class ChatMessageResponse(BaseModel):
     structured: IntakeStructuredResult
     case_id: int | None = None
     summary: AISummaryRead | None = None
+    lawyer_match: LawyerMatchRead | None = None
 
 
 class ConversationRead(BaseModel):

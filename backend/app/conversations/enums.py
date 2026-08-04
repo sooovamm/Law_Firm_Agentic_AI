@@ -25,6 +25,7 @@ class IntakeStage(str, Enum):
     PRACTICE_AREA_DETECTION = "practice_area_detection"
     INFORMATION_COLLECTION = "information_collection"
     LEAD_QUALIFICATION = "lead_qualification"
+    LAWYER_MATCHING = "lawyer_matching"
     GENERATE_SUMMARY = "generate_summary"
     CREATE_CASE = "create_case"
     FINISHED = "finished"

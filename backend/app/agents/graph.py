@@ -2,15 +2,17 @@
 
 Flow:
     greeting -> practice_area_detection -> information_collection
-             -> lead_qualification -> generate_summary -> (create_case / finish)
+             -> lead_qualification -> [lawyer_matching if recommended]
+             -> generate_summary -> (create_case / finish)
 
 Turn model:
 - The front stages (greeting, practice-area detection, information collection)
   run one step per user turn so the client and agent alternate.
 - information_collection loops on itself (asking follow-ups) until enough
   information is gathered; when it is, the graph continues automatically through
-  lead_qualification and generate_summary in the SAME turn, so the client
-  immediately receives the closing message.
+  lead_qualification, lawyer_matching (only for recommended leads), and
+  generate_summary in the SAME turn, so the client immediately receives the
+  closing message.
 - create_case and finish are performed by the service after the graph returns,
   since they require database writes.
 """
@@ -24,6 +26,7 @@ from app.agents.nodes import (
     generate_summary_node,
     greeting_node,
     information_collection_node,
+    lawyer_matching_node,
     lead_qualification_node,
     practice_area_node,
 )
@@ -36,6 +39,7 @@ _STAGE_NODES = {
     IntakeStage.PRACTICE_AREA_DETECTION: practice_area_node,
     IntakeStage.INFORMATION_COLLECTION: information_collection_node,
     IntakeStage.LEAD_QUALIFICATION: lead_qualification_node,
+    IntakeStage.LAWYER_MATCHING: lawyer_matching_node,
     IntakeStage.GENERATE_SUMMARY: generate_summary_node,
 }
 
@@ -53,6 +57,13 @@ def _after_information(state: IntakeState) -> str:
     if state.get("enough_collected"):
         return IntakeStage.LEAD_QUALIFICATION.value
     return END
+
+
+def _after_qualification(state: IntakeState) -> str:
+    """Only run lawyer matching for leads that will actually become a case."""
+    if state.get("recommended"):
+        return IntakeStage.LAWYER_MATCHING.value
+    return IntakeStage.GENERATE_SUMMARY.value
 
 
 def build_intake_graph(llm: LLMClient):
@@ -81,9 +92,15 @@ def build_intake_graph(llm: LLMClient):
             END: END,
         },
     )
-    graph.add_edge(
-        IntakeStage.LEAD_QUALIFICATION.value, IntakeStage.GENERATE_SUMMARY.value
+    graph.add_conditional_edges(
+        IntakeStage.LEAD_QUALIFICATION.value,
+        _after_qualification,
+        {
+            IntakeStage.LAWYER_MATCHING.value: IntakeStage.LAWYER_MATCHING.value,
+            IntakeStage.GENERATE_SUMMARY.value: IntakeStage.GENERATE_SUMMARY.value,
+        },
     )
+    graph.add_edge(IntakeStage.LAWYER_MATCHING.value, IntakeStage.GENERATE_SUMMARY.value)
     graph.add_edge(IntakeStage.GENERATE_SUMMARY.value, END)
 
     return graph.compile()
